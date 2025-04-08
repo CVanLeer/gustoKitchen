@@ -673,43 +673,73 @@ function deleteCateringOrder(orderId, rowIndex) {
 }
 
 function getCalendarEvents() {
-  const calendarId = 'c_c59c18554960ff4ecb8488d624cac17f8af62224f3c71acd42edefb4bd52ea6a@group.calendar.google.com';
-  const calendar = CalendarApp.getCalendarById(calendarId);
-  if (!calendar) {
-    throw new Error('Calendar not found or access denied');
-  }
+  const calendarIds = [
+    'c_c59c18554960ff4ecb8488d624cac17f8af62224f3c71acd42edefb4bd52ea6a@group.calendar.google.com',
+    'marketing@whatsyourgusto.com'
+  ];
   
   const today = new Date();
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const events = calendar.getEvents(today, nextWeek);
+  today.setHours(0, 0, 0, 0); // Start of today
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from today
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000); // Yesterday
   
-  const timeZone = calendar.getTimeZone();
+  let allEvents = {
+    todayEvents: [],
+    upcomingEvents: [],
+    ongoingEvents: []
+  };
   
-  const eventData = events.map(event => {
-    const title = event.getTitle();
-    let start, end;
-    
-    if (event.isAllDayEvent()) {
-      // For all-day events, show only month and day (e.g., "March 31")
-      const startDate = event.getStartTime();
-      const endDate = new Date(event.getEndTime().getTime() - 24 * 60 * 60 * 1000);
-      
-      start = Utilities.formatDate(startDate, timeZone, 'MMMM dd');
-      if (startDate.getTime() === endDate.getTime()) {
-        end = start; // Same day, so end date is the same
-      } else {
-        end = Utilities.formatDate(endDate, timeZone, 'MMMM dd');
-      }
-    } else {
-      // For timed events, use the full format without the year (e.g., "March 31, 2:00 PM")
-      start = Utilities.formatDate(event.getStartTime(), timeZone, 'MMMM dd, h:mm a');
-      end = Utilities.formatDate(event.getEndTime(), timeZone, 'MMMM dd, h:mm a');
+  calendarIds.forEach(calendarId => {
+    const calendar = CalendarApp.getCalendarById(calendarId);
+    if (!calendar) {
+      Logger.log(`Calendar not found or access denied: ${calendarId}`);
+      return;
     }
     
-    return { title, start, end };
+    const events = calendar.getEvents(yesterday, nextWeek);
+    const timeZone = calendar.getTimeZone();
+    
+    events.forEach(event => {
+      const title = event.getTitle();
+      let start, end;
+      
+      const startDate = new Date(event.getStartTime());
+      const endDate = new Date(event.getEndTime());
+      
+      if (event.isAllDayEvent()) {
+        start = Utilities.formatDate(startDate, timeZone, 'MMMM dd');
+        const adjustedEndDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+        end = Utilities.formatDate(adjustedEndDate, timeZone, 'MMMM dd');
+      } else {
+        start = Utilities.formatDate(startDate, timeZone, 'MMMM dd, h:mm a');
+        end = Utilities.formatDate(endDate, timeZone, 'MMMM dd, h:mm a');
+      }
+      
+      const eventData = { title, start, end, startDate, endDate };
+      
+      // Categorize the event
+      const startDateOnly = new Date(startDate);
+      startDateOnly.setHours(0, 0, 0, 0);
+      
+      if (startDateOnly.getTime() === today.getTime()) {
+        // Today’s events
+        allEvents.todayEvents.push(eventData);
+      } else if (startDateOnly.getTime() > today.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
+        // Upcoming events (next 7 days)
+        allEvents.upcomingEvents.push(eventData);
+      } else if (startDateOnly.getTime() < today.getTime() && endDate.getTime() >= today.getTime()) {
+        // Ongoing events (started before today, still active)
+        allEvents.ongoingEvents.push(eventData);
+      }
+    });
   });
   
-  return eventData;
+  // Sort events within each category by start date
+  allEvents.todayEvents.sort((a, b) => a.startDate - b.startDate);
+  allEvents.upcomingEvents.sort((a, b) => a.startDate - b.startDate);
+  allEvents.ongoingEvents.sort((a, b) => a.startDate - b.startDate);
+  
+  return allEvents;
 }
 
 // Expose the function to the client-side
