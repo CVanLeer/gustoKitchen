@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;700&family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Montserrat', sans-serif;
+        margin: 0;
+        background-color: #f9f9f9;
+        color: #333;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      .header {
+        background-color: #1A3C5A;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .header-logo {
+        height: 40px;
+        width: auto; /* Maintain aspect ratio */
+        display: block; /* Ensure it displays as a block element */
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header-right a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.9em;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .header-right a:hover {
+        color: #F5A623;
+      }
+
+      .header-right .crisis-icon {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8em;
+        color: #fff;
+      }
+
+      .main-content {
+        margin: 20px;
+      }
+
+      .tab-container {
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      .tab {
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 1em;
+        color: #fff;
+        background-color: #1A3C5A;
+        flex: 1 1 auto;
+        text-align: center;
+        min-width: 100px;
+      }
+      .tab:hover {
+        background-color: #2A4C6A;
+      }
+      .tab.active {
+        background-color: #FFC107;
+        color: #1A3C5A;
+      }
+      .tabcontent {
+        display: none;
+        padding: 15px;
+        border: 1px solid #E0E0E0;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      h2, h3, h4 {
+        font-family: 'Poppins', sans-serif;
+      }
+      h2 {
+        color: #F5A623;
+        border-bottom: 2px solid #F5A623;
+        padding-bottom: 10px;
+        font-size: 2em;
+        text-align: center;
+        margin: 0 auto;
+        width: fit-content;
+        font-weight: 700;
+      }
+      h3 {
+        color: #F5A623;
+        margin: 15px 0 10px;
+        font-size: 1.5em;
+        font-weight: 500;
+      }
+      h4 {
+        color: #F5A623;
+        margin: 10px 0;
+        font-size: 1.2em;
+        font-weight: 400;
+      }
+      .section {
+        margin-bottom: 20px;
+        background-color: #F9F9F9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border: 1px solid #E0E0E0;
+      }
+      .item { margin: 5px 0; }
+      .label { font-weight: bold; }
+      input[type="number"], select, button, label {
+        font-family: 'Montserrat', sans-serif;
+      }
+      input[type="number"] {
+        width: 60px;
+        margin-left: 10px;
+        padding: 5px;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        font-size: 0.9em;
+        text-align: center;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+      }
+      th, td {
+        border: 1px solid #E0E0E0;
+        padding: 8px;
+        text-align: left;
+        font-size: 0.9em;
+        white-space: nowrap;
+      }
+      th {
+        background-color: #FFC107;
+        color: #fff;
+        text-align: center;
+        font-weight: bold;
+      }
+      tr:nth-child(even) { background-color: #f2f2f2; }
+      tr:hover { background-color: #e0f7fa; }
+      h4.garnishes-title, h4.vegetables-title {
+        text-align: left;
+        color: #F5A623;
+        margin: 10px 0;
+        font-size: 1.1em;
+      }
+      button {
+        background-color: #1A3C5A;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-right: 10px;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #2A4C6A;
+      }
+      button.clear-btn {
+        background-color: #e74c3c;
+      }
+      button.clear-btn:hover {
+        background-color: #c0392b;
+      }
+      .overview-section {
+        text-align: center;
+      }
+      .weather, .sales {
+        background-color: #F9F9F9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 600px;
+        border: 1px solid #E0E0E0;
+      }
+      .sales table {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        display: table;
+        overflow-x: visible;
+      }
+      .sales th, .sales td {
+        text-align: center;
+      }
+      .sales td.date-cell {
+        white-space: normal;
+        line-height: 1.2;
+      }
+      .product-mix {
+        background-color: #F9F9F9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 600px;
+        border: 1px solid #E0E0E0;
+      }
+      .product-mix table {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        display: table;
+        overflow-x: visible;
+      }
+      .product-mix th, .product-mix td {
+        text-align: center;
+      }
+      //Calendar Display CSS
+      .calendar-events {
+        margin-top: 20px;
+        background-color: #F9F9F9;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 600px;
+        border: 1px solid #E0E0E0;
+        overflow-x: auto; /* Enable horizontal scrolling if table overflows */
+        margin-bottom: 30px;
+      }
+      .calendar-events table {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        display: table;
+        overflow-x: visible;
+      }
+      .calendar-events th, .calendar-events td {
+        text-align: center;
+        white-space: normal; /* Allow text to wrap */
+        word-wrap: break-word; /* Ensure long words break to fit */
+        min-width: 100px; /* Set a minimum width for columns to prevent excessive shrinking */
+      }
+      .settings-row {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+      }
+      .settings-row label {
+        width: 200px;
+        font-weight: bold;
+      }
+      #Settings h4 {
+        font-family: 'Poppins', sans-serif;
+        color: #F5A623;
+        margin: 15px 0 10px;
+        font-size: 1.1em;
+        font-weight: 400;
+        border-bottom: 1px solid #E0E0E0;
+        padding-bottom: 5px;
+        text-align: center;
+      }
+      #Settings h5 {
+        font-family: 'Poppins', sans-serif;
+        color: #F5A623;
+        margin: 10px 0 5px;
+        font-size: 1em;
+        font-weight: 400;
+      }
+      .settings-row select {
+        width: 60px;
+        padding: 5px;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        font-size: 0.9em;
+        text-align: center;
+        background-color: #fff;
+        cursor: pointer;
+      }
+      .settings-row select:focus {
+        outline: none;
+        border-color: #F5A623;
+        box-shadow: 0 0 3px rgba(245, 166, 35, 0.3);
+      }
+      #Settings .settings-row {
+        margin: 8px 0;
+      }
+      @media (max-width: 768px) {
+        .settings-row select {
+          width: 50px;
+          font-size: 0.8em;
+        }
+      }
+      @media (max-width: 480px) {
+        .settings-row select {
+          width: 40px;
+        }
+      }
+      #Settings table {
+        margin-top: 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        display: block;
+      }
+      #Settings th, #Settings td {
+        border: 1px solid #E0E0E0;
+        padding: 8px;
+        text-align: left;
+        font-size: 0.9em;
+        white-space: nowrap;
+      }
+      #Settings th {
+        background-color: #FFC107;
+        color: #fff;
+        text-align: center;
+        font-weight: bold;
+      }
+      #Settings tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+      #Settings tr:hover {
+        background-color: #e0f7fa;
+      }
+      #Settings input[type="number"],
+      #Settings select {
+        width: 60px;
+        margin: 0;
+        padding: 5px;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        font-size: 0.9em;
+        text-align: center;
+      }
+      #Settings td {
+        text-align: center;
+      }
+      #prepSheet table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      #prepSheet th {
+        background-color: #e74c3c;
+        color: #fff;
+      }
+      #prepSheet td {
+        padding: 10px;
+        vertical-align: top;
+      }
+      #prepSheet tr:nth-child(even) { background-color: #fff; }
+      #prepSheet tr:nth-child(odd) { background-color: #f5f5f5; }
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #prepSheet, #prepSheet * {
+          visibility: visible;
+        }
+        #prepSheet {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+        #prepSheet table {
+          font-size: 12pt;
+          width: 100%;
+        }
+        #prepSheet th, #prepSheet td {
+          padding: 5px;
+          border: 1px solid #000;
+        }
+        button {
+          display: none;
+        }
+        .header {
+          display: none;
+        }
+      }
+      #Inventory table,
+      #Catering table,
+      #Settings table {
+        margin: 0;
+        display: table;
+        width: 100%;
+        max-width: 100%;
+      }
+      #Inventory h3,
+      #Inventory h4,
+      #Catering h3,
+      #Catering h4,
+      #Settings h3,
+      #Settings h4 {
+        text-align: center;
+      }
+      #Inventory h4.garnishes-title,
+      #Inventory h4.vegetables-title {
+        text-align: center;
+      }
+      @media (max-width: 768px) {
+        #Inventory table,
+        #Catering table,
+        #Settings table {
+          display: block;
+          width: 100%;
+        }
+        #Inventory thead,
+        #Catering thead,
+        #Settings thead {
+          display: none;
+        }
+        #Inventory tr,
+        #Catering tr,
+        #Settings tr {
+          display: block;
+          margin-bottom: 15px;
+          border-bottom: 1px solid #E0E0E0;
+          padding-bottom: 10px;
+        }
+        #Inventory td,
+        #Catering td,
+        #Settings td {
+          display: block;
+          text-align: left;
+          padding: 5px;
+          border: none;
+          position: relative;
+        }
+        #Inventory td:before,
+        #Catering td:before,
+        #Settings td:before {
+          content: attr(data-label);
+          font-weight: bold;
+          display: inline-block;
+          width: 40%;
+          padding-right: 10px;
+        }
+        #Inventory input[type="number"],
+        #Catering input[type="number"],
+        #Settings input[type="number"],
+        #Settings select {
+          width: 50px;
+          font-size: 0.9em;
+        }
+        h2 { font-size: 1.2em; }
+        h3 { font-size: 1.1em; }
+        .tab {
+          flex: 1 1 100%;
+          padding: 10px;
+          font-size: 0.9em;
+        }
+        .tab-container {
+          flex-direction: column;
+        }
+        input[type="number"] {
+          width: 50px;
+          font-size: 0.8em;
+        }
+        th, td {
+          font-size: 0.8em;
+          padding: 6px;
+        }
+        .settings-row label {
+          width: 150px;
+        }
+        button {
+          padding: 8px 15px;
+          font-size: 0.9em;
+        }
+        .header-right a {
+          font-size: 0.8em;
+        }
+      }
+      @media (max-width: 480px) {
+        .main-content { margin: 10px; }
+        .section { padding: 10px; }
+        .settings-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .settings-row label {
+          width: 100%;
+          margin-bottom: 5px;
+        }
+        input[type="number"] {
+          width: 40px;
+        }
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+        }
+        .header-logo {
+          height: 30px;
+        }
+      }
+
+      .upcoming-orders-section {
+        margin-top: 20px;
+      }
+      
+      .date-section {
+        margin-bottom: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
+        overflow: hidden;
+      }
+      
+      .date-header {
+        background-color: #1A3C5A;
+        color: #fff;
+        padding: 10px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .date-title {
+        margin: 0;
+        font-size: 1.2em;
+        font-weight: 600;
+      }
+      
+      .toggle-button {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5em;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      }
+      
+      .toggle-button:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+      
+      .date-content {
+        padding: 15px;
+      }
+      
+      .daily-totals {
+        background-color: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+      
+      .totals-header {
+        color: #F5A623;
+        margin: 0 0 10px 0;
+        font-size: 1.1em;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 8px;
+      }
+      
+      .totals-category {
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      .category-title {
+        font-weight: bold;
+        margin-right: 10px;
+        min-width: 120px;
+      }
+      
+      .category-items {
+        display: flex;
+        flex-wrap: wrap;
+        flex: 1;
+      }
+      
+      .category-item {
+        margin-right: 15px;
+        margin-bottom: 5px;
+      }
+      
+      .order-card {
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      
+      .order-header {
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      
+      .customer-name {
+        margin: 0;
+        font-size: 1.1em;
+        color: #1A3C5A;
+      }
+      
+      .order-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .time-due {
+        font-weight: 500;
+      }
+      
+      .status-pill {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.85em;
+        font-weight: 500;
+      }
+      
+      .status-pending {
+        background-color: #FFC107;
+        color: #000;
+      }
+      
+      .status-in-progress {
+        background-color: #2196F3;
+        color: #fff;
+      }
+      
+      .status-completed {
+        background-color: #4CAF50;
+        color: #fff;
+      }
+      
+      .status-cancelled {
+        background-color: #F44336;
+        color: #fff;
+      }
+      
+      .toggle-details-button {
+        background-color: #1A3C5A;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85em;
+      }
+      
+      .toggle-details-button:hover {
+        background-color: #2A4C6A;
+      }
+      
+      .order-details {
+        padding: 15px;
+      }
+      
+      .order-details.hidden {
+        display: none;
+      }
+      
+      .details-row {
+        margin-bottom: 8px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      .details-label {
+        font-weight: 600;
+        min-width: 100px;
+        margin-right: 10px;
+      }
+      
+      .details-value {
+        flex: 1;
+      }
+      
+      .order-items {
+        margin-top: 15px;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 15px;
+      }
+      
+      .order-items h6 {
+        margin: 0 0 10px 0;
+        font-size: 1em;
+        color: #1A3C5A;
+      }
+      
+      .item-type {
+        font-weight: 600;
+        margin: 10px 0 5px 0;
+        background-color: #f5f5f5;
+        padding: 5px 8px;
+        border-radius: 4px;
+      }
+      
+      .item {
+        margin-bottom: 10px;
+        padding-left: 10px;
+      }
+      
+      .item-option {
+        padding-left: 15px;
+        font-size: 0.9em;
+        color: #555;
+      }
+      
+      .order-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 15px;
+      }
+      
+      .status-select {
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        flex: 1;
+      }
+      
+      .delete-button {
+        background-color: #F44336;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      
+      .delete-button:hover {
+        background-color: #D32F2F;
+      }
+      
+      .pdf-button {
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+      }
+      
+      .pdf-button:hover {
+        background-color: #388E3C;
+      }
+      
+      @media (max-width: 768px) {
+        .order-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        
+        .order-meta {
+          margin-top: 8px;
+          flex-wrap: wrap;
+        }
+        
+        .details-label {
+          min-width: 100%;
+          margin-bottom: 4px;
+        }
+        
+        .details-value {
+          padding-left: 10px;
+        }
+        
+        .category-title {
+          min-width: 100%;
+          margin-bottom: 5px;
+        }
+        
+        .order-actions {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="https://imgur.com/8SKy8Od" alt="gusto! Logo" class="header-logo">
+      <div class="tab-container">
+        <button class="tab active" onclick="openTab(event, 'Overview')">Overview</button>
+        <button class="tab" onclick="openTab(event, 'Inventory')">Inventory</button>
+        <button class="tab" onclick="openTab(event, 'Catering')">Catering</button>
+        <button class="tab" onclick="openTab(event, 'PrepSheet')">Prep Sheet</button>
+        <button class="tab" onclick="openTab(event, 'Settings')">Settings</button>
+      </div>
+      <div class="header-right">
+        <a href="#">Facing A Crisis?</a>
+        <div class="crisis-icon">?</div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <h2>Live Today with gusto!</h2>
+      
+
+      <div id="Overview" class="tabcontent" style="display: block;">
+        <div class="overview-section">
+          <h3>Chamblee</h3>
+          <h4 id="date"></h4>
+          <div class="weather">
+            <h4>Today's Weather</h4>
+            <p id="weather"></p>
+          </div>
+          <div class="calendar-events">
+            <h4>Upcoming Events</h4>
+            <div id="calendarEvents"></div>
+          </div>
+          <button id="save-proceed-top" onclick="saveOverridesAndProceed()">Save with gusto! & Proceed to Inventory</button>
+          <div class="sales">
+            <h4>Sales Projections</h4>
+            <table id="sales-projections-table">
+              <tr>
+                <th style="width: 40%;">Day</th>
+                <th style="width: 30%;">Projected</th>
+                <th style="width: 30%;">Override</th>
+              </tr>
+              <tr><td class="date-cell" id="day-0"></td><td id="proj-0"></td><td><input type="number" id="override-0" onkeypress="moveToNextOverride(event, 0, 'sales')" oninput="storeOverride(1, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-1"></td><td id="proj-1"></td><td><input type="number" id="override-1" onkeypress="moveToNextOverride(event, 1, 'sales')" oninput="storeOverride(2, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-2"></td><td id="proj-2"></td><td><input type="number" id="override-2" onkeypress="moveToNextOverride(event, 2, 'sales')" oninput="storeOverride(3, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-3"></td><td id="proj-3"></td><td><input type="number" id="override-3" onkeypress="moveToNextOverride(event, 3, 'sales')" oninput="storeOverride(4, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-4"></td><td id="proj-4"></td><td><input type="number" id="override-4" onkeypress="moveToNextOverride(event, 4, 'sales')" oninput="storeOverride(5, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-5"></td><td id="proj-5"></td><td><input type="number" id="override-5" onkeypress="moveToNextOverride(event, 5, 'sales')" oninput="storeOverride(6, this.value)"></td></tr>
+              <tr><td class="date-cell" id="day-6"></td><td id="proj-6"></td><td><input type="number" id="override-6" onkeypress="moveToNextOverride(event, 6, 'sales')" oninput="storeOverride(7, this.value)"></td></tr>
+            </table>
+          </div>
+          <div class="product-mix">
+            <h4>Product Mix</h4>
+            <table id="product-mix-table">
+              <tr>
+                <th style="width: 40%;">Category</th>
+                <th style="width: 30%;">Average</th>
+                <th style="width: 30%;">Override</th>
+              </tr>
+              <tr><td>Chipotle Mango Avocado</td><td id="product-mix-avg-0"></td><td><input type="number" id="product-mix-override-0" oninput="storeProductMixOverride(1, this.value)" onkeypress="moveToNextOverride(event, 0, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Ginger Lime Peanut</td><td id="product-mix-avg-1"></td><td><input type="number" id="product-mix-override-1" oninput="storeProductMixOverride(2, this.value)" onkeypress="moveToNextOverride(event, 1, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Pesto Balsamic Parmesan</td><td id="product-mix-avg-2"></td><td><input type="number" id="product-mix-override-2" oninput="storeProductMixOverride(3, this.value)" onkeypress="moveToNextOverride(event, 2, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Lemon Pepper Ranch</td><td id="product-mix-avg-3"></td><td><input type="number" id="product-mix-override-3" oninput="storeProductMixOverride(4, this.value)" onkeypress="moveToNextOverride(event, 3, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Polynesian Chili Mango</td><td id="product-mix-avg-4"></td><td><input type="number" id="product-mix-override-4" oninput="storeProductMixOverride(5, this.value)" onkeypress="moveToNextOverride(event, 4, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Queso Verde Queso</td><td id="product-mix-avg-5"></td><td><input type="number" id="product-mix-override-5" oninput="storeProductMixOverride(6, this.value)" onkeypress="moveToNextOverride(event, 5, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Sweet Soy Sriracha</td><td id="product-mix-avg-6"></td><td><input type="number" id="product-mix-override-6" oninput="storeProductMixOverride(7, this.value)" onkeypress="moveToNextOverride(event, 6, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+              <tr><td>Tahini Cucumber Feta</td><td id="product-mix-avg-7"></td><td><input type="number" id="product-mix-override-7" oninput="storeProductMixOverride(8, this.value)" onkeypress="moveToNextOverride(event, 7, 'product-mix')"><span style="margin-left: 5px;">%</span></td></tr>
+            </table>
+          </div>
+          <button id="save-proceed-bottom" onclick="saveOverridesAndProceed()">Save with gusto! & Proceed to Inventory</button>
+        </div>
+      </div>
+
+      <div id="Inventory" class="tabcontent">
+        <div class="section">
+          <button class="clear-btn" onclick="clearInventory()">Clear Inventory</button>
+          <h3>Inventory</h3>
+          <div id="cookies"></div>
+          <div id="medleys"></div>
+          <div id="sauces"></div>
+          <div id="garnishes"></div>
+          <div id="vegetables"></div>
+          <div id="dressings"></div>
+          <button onclick="saveInventoryAndProceed()">Save with gusto! & Proceed to Catering</button>
+        </div>
+      </div>
+
+      <div id="Catering" class="tabcontent">
+        <div class="section">
+          <div id="catering"></div>
+          <button onclick="saveCateringAndProceed()">Save with gusto! & Proceed to Prep Sheet</button>
+        </div>
+      </div>
+
+      <div id="PrepSheet" class="tabcontent">
+        <div class="section">
+          <div id="prepSheet"></div>
+          <button onclick="completeInventory()">Complete Inventory</button>
+          <button onclick="printPrepSheet()">Print Prep Sheet</button>
+        </div>
+      </div>
+
+      <div id="Settings" class="tabcontent">
+        <div class="section">
+          <div style="background-color: #F5A623; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+            Fuel Your Growth! Adjust settings to empower your team.
+          </div>
+          <h3>Settings - Fuel Your Growth!</h3>
+          <h4>Cookies</h4>
+          <table>
+            <tr><th>Name</th><th>Buffer (%)</th></tr>
+            <tr><td>Cookies Buffer</td><td><input type="number" id="buffer-cookies" step="0.1"></td></tr>
+          </table>
+          <h4>Medleys (Percent Buffer by Day)</h4>
+          <table>
+            <tr><th>Day</th><th>Buffer (%)</th></tr>
+            <tr><td>Sunday</td><td><input type="number" id="buffer-medley-sunday" step="0.1"></td></tr>
+            <tr><td>Monday</td><td><input type="number" id="buffer-medley-monday" step="0.1"></td></tr>
+            <tr><td>Tuesday</td><td><input type="number" id="buffer-medley-tuesday" step="0.1"></td></tr>
+            <tr><td>Wednesday</td><td><input type="number" id="buffer-medley-wednesday" step="0.1"></td></tr>
+            <tr><td>Thursday</td><td><input type="number" id="buffer-medley-thursday" step="0.1"></td></tr>
+            <tr><td>Friday</td><td><input type="number" id="buffer-medley-friday" step="0.1"></td></tr>
+            <tr><td>Saturday</td><td><input type="number" id="buffer-medley-saturday" step="0.1"></td></tr>
+          </table>
+          <h4>Catering</h4>
+          <table>
+            <tr><th>Name</th><th>Buffer (%)</th></tr>
+            <tr><td>Medley Buffer</td><td><input type="number" id="buffer-catering-medley" step="0.1"></td></tr>
+          </table>
+          <h4>Sauces</h4>
+          <div style="padding: 10px 0;">
+            <table id="sauce-buffer-par-table">
+              <tr><th>Sauce</th><th>Days Worth</th></tr>
+            </table>
+            <table id="sauce-buffer-amount-table">
+              <tr><th>Sauce</th><th>Days Worth</th></tr>
+            </table>
+          </div>
+          <h4>Vegetables</h4>
+          <div style="padding: 10px 0;">
+            <table id="vegetable-hold-times-table">
+              <tr><th>Vegetable</th><th>Min Days</th><th>Max Days</th></tr>
+            </table>
+          </div>
+          <h4>Authorized Users</h4>
+          <table id="authorized-users-table">
+            <tr><th>Email</th><th>Actions</th></tr>
+          </table>
+          <div style="margin-top: 10px;">
+            <input type="email" id="new-user-email" placeholder="Enter email" style="padding: 5px; width: 200px;">
+            <button onclick="addAuthorizedUser()" style="margin-left: 10px;">Add User</button>
+          </div>
+          <button onclick="saveSettings()">Save with gusto!</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let updates = [];
+      let cateringMedleyCount = 0;
+      let overrides = [];
+      let productMixOverrides = [];
+
+      // Also fix the openTab function to prevent multiple loadCateringOrders calls
+      function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tab");
+        for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+        console.log("Switched to tab: " + tabName);
+        
+        if (tabName === "Settings") {
+          console.log("Loading settings from openTab function...");
+          loadSettings();
+        } else if (tabName === "Catering") {
+          console.log("Loading catering orders from openTab function...");
+          // We only need to load catering orders if we're switching to the Catering tab
+          loadCateringOrders();
+        }
+      }
+
+      function loadInventory() {
+        console.log("Loading inventory...");
+        google.script.run.withSuccessHandler(function(data) {
+          console.log("Inventory data received:", data);
+          displayOverview(data);
+          displayInventory(data);
+          displayCatering(data);
+        }).getInventoryData();
+        loadSettings();
+      }
+
+      function moveToNextOverride(event, index, section) {
+        if (event.key === 'Enter') {
+          let nextId;
+          const salesOverrideCount = 7;
+          const productMixOverrideCount = 8;
+
+          if (section === 'sales') {
+            if (index < salesOverrideCount - 1) {
+              nextId = `override-${index + 1}`;
+            } else {
+              nextId = 'product-mix-override-0';
+            }
+          } else if (section === 'product-mix') {
+            if (index < productMixOverrideCount - 1) {
+              nextId = `product-mix-override-${index + 1}`;
+            } else {
+              nextId = 'save-proceed-bottom';
+            }
+          }
+
+          var nextInput = document.getElementById(nextId);
+          if (nextInput) {
+            nextInput.focus();
+            if (nextInput.tagName === 'INPUT') {
+              nextInput.select();
+            }
+          }
+          event.preventDefault();
+        }
+      }
+
+      function displayOverview(data) {
+        console.log("Displaying overview:", data.overview);
+        if (data.overview && data.overview.date && data.overview.dayOfWeek) {
+          document.getElementById('date').innerHTML = `${data.overview.date} (${data.overview.dayOfWeek})`;
+        } else {
+          console.error("Date or dayOfWeek missing in overview data");
+          document.getElementById('date').innerHTML = "Date unavailable";
+        }
+
+        if (data.overview && data.overview.weather) {
+          document.getElementById('weather').innerHTML = `${data.overview.weather.temp}°F, ${data.overview.weather.description}`;
+        } else {
+          console.error("Weather data missing in overview");
+          document.getElementById('weather').innerHTML = "Weather unavailable";
+        }
+
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+          const currentDate = new Date(today);
+          currentDate.setDate(today.getDate() + i);
+          const formattedDate = currentDate.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+          const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+          document.getElementById(`day-${i}`).innerHTML = `${formattedDate}<br>(${dayOfWeek})`;
+
+          if (data.overview && data.overview.salesProjections) {
+            const projectedValue = data.overview.salesProjections[i] || 0;
+            document.getElementById(`proj-${i}`).innerHTML = projectedValue.toLocaleString('en-US', {
+              style: 'currency',
+              currency: 'USD',
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
+          } else {
+            console.error("Sales projections missing in overview data");
+            document.getElementById(`proj-${i}`).innerHTML = "N/A";
+          }
+
+          document.getElementById(`override-${i}`).value = data.overview.salesOverrides[i] || '';
+        }
+
+        if (data.overview && data.overview.productMix) {
+          for (let i = 0; i < 8; i++) {
+            const avgValue = data.overview.productMix.averages[i] || 0;
+            const formattedAvg = (avgValue * 100).toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }) + '%';
+            document.getElementById(`product-mix-avg-${i}`).innerHTML = formattedAvg;
+
+            const overrideValue = data.overview.productMix.overrides[i];
+            document.getElementById(`product-mix-override-${i}`).value = overrideValue !== '' ? (overrideValue * 100) : '';
+          }
+        } else {
+          console.error("Product mix data missing in overview");
+          for (let i = 0; i < 8; i++) {
+            document.getElementById(`product-mix-avg-${i}`).innerHTML = "N/A";
+            document.getElementById(`product-mix-override-${i}`).value = '';
+          }
+        }
+
+        displayCalendarEvents(data.calendarEvents);
+      }
+
+      function displayCalendarEvents(events) {
+        const container = document.getElementById('calendarEvents');
+        if (!events || events.length === 0) {
+          container.innerHTML = '<p>No upcoming events in the next 7 days.</p>';
+          return;
+        }
+        
+        let html = '<table>';
+        html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
+        events.forEach(event => {
+          html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+        });
+        html += '</table>';
+        container.innerHTML = html;
+      }
+
+      function storeOverride(col, value) {
+        // Find if we already have an override for this column
+        const existingIndex = overrides.findIndex(item => item.col === col);
+        
+        if (existingIndex !== -1) {
+          // Update existing override
+          overrides[existingIndex].value = value;
+        } else {
+          // Add new override
+          overrides.push({ col: col, value: value });
+        }
+        console.log("Overrides:", overrides);
+      }
+
+      function storeProductMixOverride(row, value) {
+        // Find if we already have an override for this row
+        const existingIndex = productMixOverrides.findIndex(item => item.row === row);
+        
+        if (existingIndex !== -1) {
+          // Update existing override
+          productMixOverrides[existingIndex].value = value;
+        } else {
+          // Add new override
+          productMixOverrides.push({ row: row, value: value });
+        }
+        console.log("Product mix overrides:", productMixOverrides);
+      }
+
+      function saveOverridesAndProceed() {
+        console.log("Saving overrides and proceeding to Inventory...");
+        let savePromises = [];
+
+        if (overrides.length > 0) {
+          savePromises.push(new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .updateSalesOverrides(overrides);
+          }));
+        }
+
+        if (productMixOverrides.length > 0) {
+          savePromises.push(new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .updateProductMixOverrides(productMixOverrides);
+          }));
+        }
+
+        if (savePromises.length > 0) {
+          Promise.all(savePromises)
+            .then(() => {
+              console.log("All overrides saved successfully");
+              showToast("Heard! All overrides saved successfully.", "success");
+              overrides = [];
+              productMixOverrides = [];
+              openTab({ currentTarget: document.querySelector('.tab[onclick*="Inventory"]') }, 'Inventory');
+            })
+            .catch(error => {
+              console.error("Error saving overrides:", error);
+              showToast("Failed to save overrides: " + error.message, "error");
+            });
+        } else {
+          console.log("No overrides to save, proceeding to Inventory...");
+          openTab({ currentTarget: document.querySelector('.tab[onclick*="Inventory"]') }, 'Inventory');
+        }
+      }
+
+      function clearInventory() {
+        console.log("Clearing inventory...");
+        const inventoryTab = document.getElementById('Inventory');
+        const inputs = inventoryTab.querySelectorAll('input[type="number"]');
+        
+        inputs.forEach(input => {
+          const id = input.id;
+          input.value = 0;
+          const onInputAttr = input.getAttribute('oninput');
+          const match = onInputAttr.match(/storeUpdate\('([^']+)',\s*(\d+),\s*(\d+)/);
+          if (match) {
+            const range = match[1];
+            const row = parseInt(match[2]);
+            const col = parseInt(match[3]);
+            updates.push({ range: range, row: row, col: col, value: 0 });
+          }
+        });
+
+        console.log("Inventory cleared, updates:", updates);
+        showToast("Inventory cleared successfully!", "info");
+      }
+
+      function saveInventoryAndProceed() {
+        console.log("Saving inventory and proceeding to Catering...");
+        let localUpdates = [];
+        const inputs = document.querySelectorAll('#Inventory input[type="number"]');
+        inputs.forEach(input => {
+          const value = input.value;
+          const onInputAttr = input.getAttribute('oninput');
+          const match = onInputAttr?.match(/storeUpdate\('([^']+)',\s*(\d+),\s*(\d+)/);
+          if (match) {
+            const range = match[1];
+            const row = parseInt(match[2]);
+            const col = parseInt(match[3]);
+            localUpdates.push({ range: range, row: row, col: col, value: value });
+          }
+        });
+
+        if (localUpdates.length > 0) {
+          google.script.run
+            .withSuccessHandler(function() {
+              console.log("Inventory saved successfully");
+              showToast("Heard! Inventory saved successfully!", "success");
+              openTab({ currentTarget: document.querySelector('.tab[onclick*="Catering"]') }, 'Catering');
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error saving inventory:", error);
+              showToast("Failed to save inventory: " + error.message, "error");
+            })
+            .updateData(localUpdates);
+        } else {
+          console.log("No inventory changes to save, proceeding to Catering...");
+          openTab({ currentTarget: document.querySelector('.tab[onclick*="Catering"]') }, 'Catering');
+        }
+      }
+
+      function saveCateringAndProceed() {
+        console.log("Saving catering and proceeding to Prep Sheet...");
+        let localUpdates = [];
+        const inputs = document.querySelectorAll('#Catering input[type="number"]');
+        inputs.forEach(input => {
+          const value = input.value;
+          const onInputAttr = input.getAttribute('oninput');
+          const match = onInputAttr?.match(/storeUpdate\('([^']+)',\s*(\d+),\s*(\d+)/);
+          if (match) {
+            const range = match[1];
+            const row = parseInt(match[2]);
+            const col = parseInt(match[3]);
+            localUpdates.push({ range: range, row: row, col: col, value: value });
+          }
+        });
+
+        if (localUpdates.length > 0) {
+          google.script.run
+            .withSuccessHandler(function() {
+              console.log("Catering saved successfully");
+              showToast("Heard! Catering saved successfully!", "success");
+              openTab({ currentTarget: document.querySelector('.tab[onclick*="PrepSheet"]') }, 'PrepSheet');
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error saving catering:", error);
+              showToast("Failed to save catering: " + error.message, "error");
+            })
+            .updateData(localUpdates);
+        } else {
+          console.log("No catering changes to save, proceeding to Prep Sheet...");
+          openTab({ currentTarget: document.querySelector('.tab[onclick*="PrepSheet"]') }, 'PrepSheet');
+        }
+      }
+
+      function storeUpdate(range, row, col, value) {
+        updates.push({ range: range, row: row, col: col, value: value });
+        console.log("Update stored:", { range, row, col, value });
+      }
+
+      function shiftDaysUp() {
+        console.log("Shifting catering days up...");
+        let localUpdates = [];
+        
+        for (let index = 0; index < cateringMedleyCount; index++) {
+          const today = parseFloat(document.getElementById(`catering-today-${index}`).value) || 0;
+          const day2 = parseFloat(document.getElementById(`catering-day2-${index}`).value) || 0;
+          const day3 = parseFloat(document.getElementById(`catering-day3-${index}`).value) || 0;
+          const day4 = parseFloat(document.getElementById(`catering-day4-${index}`).value) || 0;
+          const day5 = parseFloat(document.getElementById(`catering-day5-${index}`).value) || 0;
+
+          document.getElementById(`catering-today-${index}`).value = day2;
+          document.getElementById(`catering-day2-${index}`).value = day3;
+          document.getElementById(`catering-day3-${index}`).value = day4;
+          document.getElementById(`catering-day4-${index}`).value = day5;
+          document.getElementById(`catering-day5-${index}`).value = 0;
+
+          localUpdates.push({ range: 'G9:K16', row: index + 1, col: 1, value: day2 });
+          localUpdates.push({ range: 'G9:K16', row: index + 1, col: 2, value: day3 });
+          localUpdates.push({ range: 'G9:K16', row: index + 1, col: 3, value: day4 });
+          localUpdates.push({ range: 'G9:K16', row: index + 1, col: 4, value: day5 });
+          localUpdates.push({ range: 'G9:K16', row: index + 1, col: 5, value: 0 });
+        }
+
+        if (localUpdates.length > 0) {
+          google.script.run
+            .withSuccessHandler(function() {
+              console.log("Catering days shifted and saved successfully");
+              showToast("Heard! Catering days shifted successfully!", "success");
+            })
+            .withFailureHandler(function(error) {
+              console.error("Error shifting catering days:", error);
+              showToast("Failed to shift catering days: " + error.message, "error");
+            })
+            .updateData(localUpdates);
+        }
+      }
+
+      function loadSettings() {
+        console.log("Loading settings...");
+        google.script.run
+          .withSuccessHandler(function(data) {
+            console.log("Settings data received:", data);
+            
+            document.getElementById('buffer-cookies').value = (data.buffer.cookies * 100) || 0;
+            document.getElementById('buffer-medley-sunday').value = (data.buffer.medleys.Sunday * 100) || 0;
+            document.getElementById('buffer-medley-monday').value = (data.buffer.medleys.Monday * 100) || 0;
+            document.getElementById('buffer-medley-tuesday').value = (data.buffer.medleys.Tuesday * 100) || 0;
+            document.getElementById('buffer-medley-wednesday').value = (data.buffer.medleys.Wednesday * 100) || 0;
+            document.getElementById('buffer-medley-thursday').value = (data.buffer.medleys.Thursday * 100) || 0;
+            document.getElementById('buffer-medley-friday').value = (data.buffer.medleys.Friday * 100) || 0;
+            document.getElementById('buffer-medley-saturday').value = (data.buffer.medleys.Saturday * 100) || 0;
+            document.getElementById('buffer-catering-medley').value = (data.buffer.catering.medleyBuffer * 100) || 0;
+
+            var vegHoldTimesTable = document.getElementById('vegetable-hold-times-table');
+            vegHoldTimesTable.innerHTML = '<tr><th>Vegetable</th><th>Min Days</th><th>Max Days</th></tr>';
+            if (Array.isArray(data.buffer.vegetables.holdTimes)) {
+              data.buffer.vegetables.holdTimes.forEach((veg, index) => {
+                var row = document.createElement('tr');
+                const minDays = Number(veg.minDays) || 1;
+                const maxDays = Number(veg.maxDays) || 7;
+                row.innerHTML = `
+                  <td data-label="Vegetable">${veg.name || 'Unknown'}</td>
+                  <td data-label="Min Days">
+                    <select id="veg-min-days-${index}">
+                      ${[1, 2, 3, 4, 5, 6, 7].map(day => `<option value="${day}" ${minDays === day ? 'selected' : ''}>${day}</option>`).join('')}
+                    </select>
+                  </td>
+                  <td data-label="Max Days">
+                    <select id="veg-max-days-${index}">
+                      ${[1, 2, 3, 4, 5, 6, 7].map(day => `<option value="${day}" ${maxDays === day ? 'selected' : ''}>${day}</option>`).join('')}
+                    </select>
+                  </td>
+                `;
+                vegHoldTimesTable.appendChild(row);
+              });
+            } else {
+              vegHoldTimesTable.innerHTML += '<tr><td colspan="3">No vegetable data available</td></tr>';
+            }
+            
+            var sauceBufferParTable = document.getElementById('sauce-buffer-par-table');
+            sauceBufferParTable.innerHTML = '<tr><th>Sauce</th><th>Days Worth</th></tr>';
+            if (Array.isArray(data.buffer.sauces.bufferPar)) {
+              data.buffer.sauces.bufferPar.forEach((sauce, index) => {
+                var row = document.createElement('tr');
+                const daysWorth = Number(sauce.daysWorth) || 1;
+                row.innerHTML = `
+                  <td data-label="Sauce">${sauce.name || 'Unknown'}</td>
+                  <td data-label="Days Worth">
+                    <select id="sauce-buffer-par-${index}">
+                      ${[1, 2, 3, 4, 5, 6, 7].map(day => `<option value="${day}" ${daysWorth === day ? 'selected' : ''}>${day}</option>`).join('')}
+                    </select>
+                  </td>
+                `;
+                sauceBufferParTable.appendChild(row);
+              });
+            } else {
+              sauceBufferParTable.innerHTML += '<tr><td colspan="2">No sauce buffer par data available</td></tr>';
+            }
+            
+            var sauceBufferAmountTable = document.getElementById('sauce-buffer-amount-table');
+            sauceBufferAmountTable.innerHTML = '<tr><th>Sauce</th><th>Days Worth</th></tr>';
+            if (Array.isArray(data.buffer.sauces.bufferAmount)) {
+              data.buffer.sauces.bufferAmount.forEach((sauce, index) => {
+                var row = document.createElement('tr');
+                const daysWorth = Number(sauce.daysWorth) || 1;
+                row.innerHTML = `
+                  <td data-label="Sauce">${sauce.name || 'Unknown'}</td>
+                  <td data-label="Days Worth">
+                    <select id="sauce-buffer-amount-${index}">
+                      ${[1, 2, 3, 4, 5, 6, 7].map(day => `<option value="${day}" ${daysWorth === day ? 'selected' : ''}>${day}</option>`).join('')}
+                    </select>
+                  </td>
+                `;
+                sauceBufferAmountTable.appendChild(row);
+              });
+            } else {
+              sauceBufferAmountTable.innerHTML += '<tr><td colspan="2">No sauce buffer amount data available</td></tr>';
+            }
+            
+            displayAuthorizedUsers(data.authorizedUsers || []);
+          })
+          .withFailureHandler(function(error) {
+            console.error("Error loading settings:", error);
+            alert("Failed to load settings: " + error.message);
+          })
+          .getSettings();
+      }
+      
+      function displayInventory(data) {
+        console.log("Displaying inventory:", data);
+        createTable('cookies', ['Name', 'Amount'], 
+          data.cookies.names.map((name, i) => [name, data.cookies.amounts[i]]), 
+          storeUpdate, { range: 'C4:C6', title: 'Cookies', isEditable: true });
+
+        createTable('medleys', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans'], 
+          data.medleys.names.map((name, i) => [name, data.medleys.inventory[i][0], data.medleys.inventory[i][1], data.medleys.inventory[i][2]]), 
+          storeUpdate, { range: 'C9:E16', title: 'Medleys', isEditable: true });
+
+        createTable('sauces', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
+          data.sauces.names.map((name, i) => [name, data.sauces.inventory[i][0], data.sauces.inventory[i][1], data.sauces.inventory[i][2], data.sauces.quarts[i]]), 
+          storeUpdate, { range: 'C19:E27', title: 'Sauces', isEditable: true, extraRange: 'G19:G27' });
+
+        createTable('garnishes', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
+          data.garnishes.names.map((name, i) => [name, data.garnishes.inventory[i][0], data.garnishes.inventory[i][1], data.garnishes.inventory[i][2], data.garnishes.quarts[i]]), 
+          storeUpdate, { range: 'C30:E34', title: 'Garnishes', isEditable: true, extraRange: 'G30:G34' });
+
+        createTable('vegetables', ['Name', 'Amount'], 
+          data.vegetables.names.map((name, i) => [name, data.vegetables.amounts[i]]), 
+          storeUpdate, { range: 'C36:C55', title: 'Vegetables', isEditable: true });
+
+        createTable('dressings', ['Name', 'Amount'], 
+          data.dressings.names.map((name, i) => [name, data.dressings.amounts[i]]), 
+          storeUpdate, { range: 'C57:C64', title: 'Dressings', isEditable: true });
+      }
+
+      function displayCatering(data) {
+        console.log("Displaying catering:", data);
+        var cateringDiv = document.getElementById('catering');
+        
+        // Clear all existing content in the catering div
+        cateringDiv.innerHTML = '';
+        
+        // Rebuild the catering table section
+        var cateringTableSection = document.createElement('div');
+        cateringTableSection.className = 'section';
+        cateringTableSection.innerHTML = `
+          <h3>Catering Portions</h3>
+          <button onclick="shiftDaysUp()">Shift Days Up</button>
+        `;
+        
+        var cateringTable = document.createElement('table');
+        var headerRow = document.createElement('tr');
+        headerRow.innerHTML = '<th>Medley</th><th>Today</th><th>Day 2</th><th>Day 3</th><th>Day 4</th><th>Day 5</th>';
+        cateringTable.appendChild(headerRow);
+
+        cateringMedleyCount = data.cateringMedleys.names.length;
+        data.cateringMedleys.names.forEach((name, index) => {
+          if (name && name.trim()) {
+            var row = document.createElement('tr');
+            row.innerHTML = `<td data-label="Medley">${name}</td>
+                            <td data-label="Today"><input type="number" id="catering-today-${index}" value="${data.cateringMedleys.portions[index][0] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 1, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-today')"></td>
+                            <td data-label="Day 2"><input type="number" id="catering-day2-${index}" value="${data.cateringMedleys.portions[index][1] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 2, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day2')"></td>
+                            <td data-label="Day 3"><input type="number" id="catering-day3-${index}" value="${data.cateringMedleys.portions[index][2] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 3, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day3')"></td>
+                            <td data-label="Day 4"><input type="number" id="catering-day4-${index}" value="${data.cateringMedleys.portions[index][3] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 4, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day4')"></td>
+                            <td data-label="Day 5"><input type="number" id="catering-day5-${index}" value="${data.cateringMedleys.portions[index][4] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 5, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day5')"></td>`;
+            cateringTable.appendChild(row);
+          }
+        });
+        cateringTableSection.appendChild(cateringTable);
+        
+        const saveButton = document.createElement('button');
+        saveButton.textContent = 'Save with gusto! & Proceed to Prep Sheet';
+        saveButton.onclick = saveCateringAndProceed;
+        cateringTableSection.appendChild(saveButton);
+        
+        // Append the catering table section to the catering div
+        cateringDiv.appendChild(cateringTableSection);
+        
+        // Now load the catering orders
+        loadCateringOrders();
+      }
+
+      function loadCateringOrders() {
+        console.log("Loading catering orders...");
+        
+        // Get the catering div
+        var cateringDiv = document.getElementById('catering');
+        
+        // Remove any existing upcoming orders sections
+        var existingOrderSections = cateringDiv.querySelectorAll('.upcoming-orders-section');
+        existingOrderSections.forEach(section => section.remove());
+        
+        // Create a new section for upcoming orders
+        var upcomingOrdersSection = document.createElement('div');
+        upcomingOrdersSection.className = 'section upcoming-orders-section';
+        upcomingOrdersSection.innerHTML = '<h3>Upcoming Catering Orders</h3>';
+        
+        // Show loading indicator
+        var loadingIndicator = document.createElement('p');
+        loadingIndicator.textContent = 'Loading catering orders...';
+        upcomingOrdersSection.appendChild(loadingIndicator);
+        
+        // Append the section to the catering div
+        cateringDiv.appendChild(upcomingOrdersSection);
+        
+        google.script.run
+          .withSuccessHandler(function(result) {
+            console.log("Received catering orders result:", result);
+            
+            // Remove loading indicator
+            upcomingOrdersSection.removeChild(loadingIndicator);
+            
+            // Handle different result types
+            if (result && result.error) {
+              // Server returned an explicit error
+              console.error("Error loading catering orders:", result.error);
+              upcomingOrdersSection.innerHTML += `<p>Error loading catering orders: ${result.error}</p>`;
+            } 
+            else if (Array.isArray(result)) {
+              // Server returned an array (might be empty)
+              if (result.length === 0) {
+                upcomingOrdersSection.innerHTML += '<p>No upcoming catering orders found for the next 7 days.</p>';
+              } else {
+                // Process and display the orders
+                result.forEach(dateGroup => {
+                  if (!dateGroup || !dateGroup.formattedDate || !Array.isArray(dateGroup.orders)) {
+                    console.warn("Invalid date group:", dateGroup);
+                    return;
+                  }
+                  
+                  // Add date section with orders
+                  try {
+                    const dateSection = createDateSection(dateGroup);
+                    upcomingOrdersSection.appendChild(dateSection);
+                  } catch (error) {
+                    console.error("Error creating date section:", error);
+                    upcomingOrdersSection.innerHTML += '<p>Error displaying some orders.</p>';
+                  }
+                });
+              }
+            } 
+            else {
+              // Unexpected response type
+              console.error("Unexpected response type from getCateringOrders:", typeof result);
+              upcomingOrdersSection.innerHTML += '<p>No upcoming catering orders found for the next 7 days.</p>';
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error("Error calling getCateringOrders:", error);
+            
+            // Remove loading indicator
+            upcomingOrdersSection.removeChild(loadingIndicator);
+            
+            // Show error message
+            upcomingOrdersSection.innerHTML += '<p>No upcoming catering orders found for the next 7 days.</p>';
+          })
+          .getCateringOrders();
+      }
+
+
+      // Helper function to create a date section
+      function createDateSection(dateGroup) {
+        const dateSection = document.createElement('div');
+        dateSection.className = 'date-section';
+        
+        const dateHeader = document.createElement('div');
+        dateHeader.className = 'date-header';
+        dateHeader.innerHTML = `<h4 class="date-title">${dateGroup.formattedDate}</h4>
+                              <button class="toggle-button" onclick="toggleDateSection(this)">-</button>`;
+        dateSection.appendChild(dateHeader);
+        
+        const dateContent = document.createElement('div');
+        dateContent.className = 'date-content';
+        
+        if (dateGroup.totals && typeof dateGroup.totals === 'object') {
+          try {
+            dateContent.appendChild(createDailyTotalsElement(dateGroup.totals));
+          } catch (error) {
+            console.error("Error creating daily totals:", error);
+          }
+        }
+        
+        if (Array.isArray(dateGroup.orders)) {
+          dateGroup.orders.forEach(order => {
+            try {
+              if (order && typeof order === 'object') {
+                dateContent.appendChild(createOrderElement(order));
+              }
+            } catch (error) {
+              console.error("Error creating order element:", error, order);
+            }
+          });
+        }
+        
+        dateSection.appendChild(dateContent);
+        return dateSection;
+      }
+
+      function displayCateringOrders(data) {
+        console.log("Displaying catering orders:", data);
+        var cateringDiv = document.getElementById('catering');
+        var upcomingOrdersSection = document.createElement('div');
+        upcomingOrdersSection.className = 'section upcoming-orders-section';
+        upcomingOrdersSection.innerHTML = '<h3>Upcoming Catering Orders</h3>';
+        
+        if (!data || data.error) {
+          upcomingOrdersSection.innerHTML += '<p class="error-message">Error loading catering orders: ' + 
+            (data && data.error ? data.error : 'Unknown error') + '</p>';
+          cateringDiv.appendChild(upcomingOrdersSection);
+          return;
+        }
+        
+        if (!Array.isArray(data) || data.length === 0) {
+          upcomingOrdersSection.innerHTML += '<p>No upcoming catering orders found for the next 7 days.</p>';
+          cateringDiv.appendChild(upcomingOrdersSection);
+          return;
+        }
+        
+        data.forEach(dateGroup => {
+          if (!dateGroup || !dateGroup.formattedDate || !Array.isArray(dateGroup.orders)) {
+            console.warn("Invalid date group:", dateGroup);
+            return;
+          }
+          
+          const dateSection = document.createElement('div');
+          dateSection.className = 'date-section';
+          
+          const dateHeader = document.createElement('div');
+          dateHeader.className = 'date-header';
+          dateHeader.innerHTML = `<h4 class="date-title">${dateGroup.formattedDate}</h4>
+                                <button class="toggle-button" onclick="toggleDateSection(this)">-</button>`;
+          dateSection.appendChild(dateHeader);
+          
+          const dateContent = document.createElement('div');
+          dateContent.className = 'date-content';
+          
+          if (dateGroup.totals && typeof dateGroup.totals === 'object') {
+            try {
+              dateContent.appendChild(createDailyTotalsElement(dateGroup.totals));
+            } catch (error) {
+              console.error("Error creating daily totals:", error);
+              const errorElement = document.createElement('div');
+              errorElement.className = 'error-message';
+              errorElement.textContent = 'Error displaying daily totals';
+              dateContent.appendChild(errorElement);
+            }
+          } else {
+            console.warn(`Missing totals for date ${dateGroup.formattedDate}`);
+            dateGroup.totals = { 
+              proteins: [], bases: [], gustos: [], chips: [], drinks: [], desserts: [], additionalItems: [] 
+            };
+            try {
+              dateContent.appendChild(createDailyTotalsElement(dateGroup.totals));
+            } catch (error) {
+              console.error("Error creating empty daily totals:", error);
+            }
+          }
+          
+          if (Array.isArray(dateGroup.orders)) {
+            dateGroup.orders.forEach(order => {
+              try {
+                if (order && typeof order === 'object') {
+                  dateContent.appendChild(createOrderElement(order));
+                } else {
+                  console.warn("Invalid order object:", order);
+                }
+              } catch (error) {
+                console.error("Error creating order element:", error, order);
+              }
+            });
+          }
+          
+          dateSection.appendChild(dateContent);
+          upcomingOrdersSection.appendChild(dateSection);
+        });
+        
+        cateringDiv.appendChild(upcomingOrdersSection);
+        try {
+          addCateringOrdersStyles();
+        } catch (error) {
+          console.error("Error adding catering orders styles:", error);
+        }
+      }
+
+      function createDailyTotalsElement(totals) {
+        if (!totals || typeof totals !== 'object') {
+          console.warn("Invalid totals object:", totals);
+          totals = { 
+            proteins: [], bases: [], gustos: [], chips: [], drinks: [], desserts: [], additionalItems: [] 
+          };
+        }
+        
+        const totalsElement = document.createElement('div');
+        totalsElement.className = 'daily-totals';
+        
+        const totalsHeader = document.createElement('h5');
+        totalsHeader.textContent = 'Daily Totals';
+        totalsHeader.className = 'totals-header';
+        totalsElement.appendChild(totalsHeader);
+        
+        const categories = [
+          { name: 'Proteins', data: totals.proteins || [] },
+          { name: 'Bases', data: totals.bases || [] },
+          { name: 'Gustos', data: totals.gustos || [] },
+          { name: 'Chips', data: totals.chips || [] },
+          { name: 'Drinks', data: totals.drinks || [] },
+          { name: 'Desserts', data: totals.desserts || [] },
+          { name: 'Additional Items', data: totals.additionalItems || [] }
+        ];
+        
+        categories.forEach(category => {
+          if (Array.isArray(category.data) && category.data.length > 0) {
+            const categorySection = document.createElement('div');
+            categorySection.className = 'totals-category';
+            
+            const categoryTitle = document.createElement('div');
+            categoryTitle.className = 'category-title';
+            categoryTitle.textContent = category.name + ':';
+            categorySection.appendChild(categoryTitle);
+            
+            const categoryItems = document.createElement('div');
+            categoryItems.className = 'category-items';
+            
+            category.data.forEach(item => {
+              if (item && typeof item === 'object' && item.name) {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'category-item';
+                const servings = typeof item.servings === 'number' ? 
+                  (Number.isInteger(item.servings) ? item.servings : item.servings.toFixed(1)) : 
+                  '?';
+                itemElement.textContent = `${item.name}: ${servings} servings`;
+                categoryItems.appendChild(itemElement);
+              }
+            });
+            
+            categorySection.appendChild(categoryItems);
+            totalsElement.appendChild(categorySection);
+          }
+        });
+        
+        return totalsElement;
+      }
+
+      function createOrderElement(order) {
+        if (!order || typeof order !== 'object') {
+          console.warn("Invalid order object:", order);
+          return document.createElement('div');
+        }
+        
+        const orderElement = document.createElement('div');
+        orderElement.className = 'order-card';
+        
+        // Create header
+        const orderHeader = document.createElement('div');
+        orderHeader.className = 'order-header';
+        
+        const customerName = document.createElement('h5');
+        customerName.className = 'customer-name';
+        customerName.textContent = order.customerName || 'Unknown Customer';
+        
+        const orderMeta = document.createElement('div');
+        orderMeta.className = 'order-meta';
+        
+        if (order.timeDue) {
+          const timeDue = document.createElement('span');
+          timeDue.className = 'time-due';
+          timeDue.textContent = order.timeDue;
+          orderMeta.appendChild(timeDue);
+        }
+        
+        const statusPill = document.createElement('span');
+        statusPill.className = `status-pill status-${(order.status || 'pending').toLowerCase().replace(/\s+/g, '-')}`;
+        statusPill.textContent = order.status || 'Pending';
+        orderMeta.appendChild(statusPill);
+        
+        const detailsButton = document.createElement('button');
+        detailsButton.className = 'toggle-details-button';
+        detailsButton.textContent = 'View Details';
+        detailsButton.onclick = function() {
+          const details = orderElement.querySelector('.order-details');
+          if (details.classList.contains('hidden')) {
+            details.classList.remove('hidden');
+            this.textContent = 'Hide Details';
+          } else {
+            details.classList.add('hidden');
+            this.textContent = 'View Details';
+          }
+        };
+        orderMeta.appendChild(detailsButton);
+        
+        orderHeader.appendChild(customerName);
+        orderHeader.appendChild(orderMeta);
+        orderElement.appendChild(orderHeader);
+        
+        // Create details section
+        const orderDetails = document.createElement('div');
+        orderDetails.className = 'order-details hidden';
+        
+        // Basic Info
+        if (order.customerContact || order.customerEmail) {
+          const contactRow = document.createElement('div');
+          contactRow.className = 'details-row';
+          
+          const contactLabel = document.createElement('div');
+          contactLabel.className = 'details-label';
+          contactLabel.textContent = 'Contact:';
+          
+          const contactValue = document.createElement('div');
+          contactValue.className = 'details-value';
+          contactValue.textContent = order.customerContact || order.customerEmail || '';
+          
+          contactRow.appendChild(contactLabel);
+          contactRow.appendChild(contactValue);
+          orderDetails.appendChild(contactRow);
+        }
+        
+        if (order.deliveryAddress) {
+          const addressRow = document.createElement('div');
+          addressRow.className = 'details-row';
+          
+          const addressLabel = document.createElement('div');
+          addressLabel.className = 'details-label';
+          addressLabel.textContent = 'Address:';
+          
+          const addressValue = document.createElement('div');
+          addressValue.className = 'details-value';
+          addressValue.textContent = order.deliveryAddress;
+          
+          addressRow.appendChild(addressLabel);
+          addressRow.appendChild(addressValue);
+          orderDetails.appendChild(addressRow);
+        }
+        
+        if (order.deliveryInstructions) {
+          const instructionsRow = document.createElement('div');
+          instructionsRow.className = 'details-row';
+          
+          const instructionsLabel = document.createElement('div');
+          instructionsLabel.className = 'details-label';
+          instructionsLabel.textContent = 'Instructions:';
+          
+          const instructionsValue = document.createElement('div');
+          instructionsValue.className = 'details-value';
+          instructionsValue.textContent = order.deliveryInstructions;
+          
+          instructionsRow.appendChild(instructionsLabel);
+          instructionsRow.appendChild(instructionsValue);
+          orderDetails.appendChild(instructionsRow);
+        }
+        
+        // Order Items
+        if (order.items) {
+          const orderItemsSection = document.createElement('div');
+          orderItemsSection.className = 'order-items';
+          
+          const orderItemsHeader = document.createElement('h6');
+          orderItemsHeader.textContent = 'Order Items';
+          orderItemsSection.appendChild(orderItemsHeader);
+          
+          // BYOG
+          if (order.items.byog && Array.isArray(order.items.byog) && order.items.byog.length > 0) {
+            const byogType = document.createElement('div');
+            byogType.className = 'item-type';
+            byogType.textContent = 'Build Your Own gusto';
+            orderItemsSection.appendChild(byogType);
+            
+            order.items.byog.forEach((byog, index) => {
+              const byogItem = document.createElement('div');
+              byogItem.className = 'item';
+              byogItem.textContent = `BYOG #${index + 1}`;
+              
+              if (byog.proteins && Array.isArray(byog.proteins)) {
+                byog.proteins.forEach(protein => {
+                  if (protein && protein.name) {
+                    const proteinOption = document.createElement('div');
+                    proteinOption.className = 'item-option';
+                    proteinOption.textContent = `Protein: ${protein.name}`;
+                    byogItem.appendChild(proteinOption);
+                  }
+                });
+              }
+              
+              if (byog.base_distribution && typeof byog.base_distribution === 'object') {
+                Object.entries(byog.base_distribution).forEach(([base, value]) => {
+                  const baseOption = document.createElement('div');
+                  baseOption.className = 'item-option';
+                  baseOption.textContent = `Base: ${base}`;
+                  byogItem.appendChild(baseOption);
+                });
+              }
+              
+              if (byog.gustos && Array.isArray(byog.gustos)) {
+                byog.gustos.forEach(gusto => {
+                  if (gusto && gusto.name) {
+                    const gustoOption = document.createElement('div');
+                    gustoOption.className = 'item-option';
+                    gustoOption.textContent = `Gusto: ${gusto.name}`;
+                    byogItem.appendChild(gustoOption);
+                  }
+                });
+              }
+              
+              orderItemsSection.appendChild(byogItem);
+            });
+          }
+          
+          // Bowls
+          if (order.items.bowls && Array.isArray(order.items.bowls) && order.items.bowls.length > 0) {
+            const bowlsType = document.createElement('div');
+            bowlsType.className = 'item-type';
+            bowlsType.textContent = 'Bowls';
+            orderItemsSection.appendChild(bowlsType);
+            
+            order.items.bowls.forEach((bowl, index) => {
+              if (bowl) {
+                const bowlItem = document.createElement('div');
+                bowlItem.className = 'item';
+                bowlItem.textContent = `Bowl #${index + 1}${bowl.quantity > 1 ? ` (x${bowl.quantity})` : ''}`;
+                
+                if (bowl.proteins && Array.isArray(bowl.proteins)) {
+                  bowl.proteins.forEach(protein => {
+                    if (protein && protein.name) {
+                      const proteinOption = document.createElement('div');
+                      proteinOption.className = 'item-option';
+                      proteinOption.textContent = `Protein: ${protein.name}`;
+                      bowlItem.appendChild(proteinOption);
+                    }
+                  });
+                }
+                
+                if (bowl.bases && Array.isArray(bowl.bases)) {
+                  bowl.bases.forEach(base => {
+                    if (base && base.name) {
+                      const baseOption = document.createElement('div');
+                      baseOption.className = 'item-option';
+                      baseOption.textContent = `Base: ${base.name}`;
+                      bowlItem.appendChild(baseOption);
+                    }
+                  });
+                }
+                
+                if (bowl.gustos && Array.isArray(bowl.gustos)) {
+                  bowl.gustos.forEach(gusto => {
+                    if (gusto && gusto.name) {
+                      const gustoOption = document.createElement('div');
+                      gustoOption.className = 'item-option';
+                      gustoOption.textContent = `Gusto: ${gusto.name}`;
+                      bowlItem.appendChild(gustoOption);
+                    }
+                  });
+                }
+                
+                orderItemsSection.appendChild(bowlItem);
+              }
+            });
+          }
+          
+          // Drinks
+          if (order.items.drinks && Array.isArray(order.items.drinks) && order.items.drinks.length > 0) {
+            const drinksType = document.createElement('div');
+            drinksType.className = 'item-type';
+            drinksType.textContent = 'Drinks';
+            orderItemsSection.appendChild(drinksType);
+            
+            order.items.drinks.forEach((drink, index) => {
+              if (drink) {
+                const drinkItem = document.createElement('div');
+                drinkItem.className = 'item';
+                
+                let drinkName = drink.itemName || "Drink";
+                if (drink.flavor) drinkName += ` (${drink.flavor})`;
+                else if (drink.sweetness) drinkName += ` (${drink.sweetness})`;
+                
+                drinkItem.textContent = `${drinkName}${drink.quantity > 1 ? ` (x${drink.quantity})` : ''}`;
+                orderItemsSection.appendChild(drinkItem);
+              }
+            });
+          }
+          
+          // Additional Items
+          if (order.items.additional && Array.isArray(order.items.additional) && order.items.additional.length > 0) {
+            const additionalType = document.createElement('div');
+            additionalType.className = 'item-type';
+            additionalType.textContent = 'Additional Items';
+            orderItemsSection.appendChild(additionalType);
+            
+            order.items.additional.forEach((item, index) => {
+              if (item) {
+                const additionalItem = document.createElement('div');
+                additionalItem.className = 'item';
+                additionalItem.textContent = `${item.itemName || "Item"}${item.quantity > 1 ? ` (x${item.quantity})` : ''}`;
+                orderItemsSection.appendChild(additionalItem);
+              }
+            });
+          }
+          
+          orderDetails.appendChild(orderItemsSection);
+        }
+        
+        // Actions
+        const orderActions = document.createElement('div');
+        orderActions.className = 'order-actions';
+        
+        const statusSelect = document.createElement('select');
+        statusSelect.className = 'status-select';
+        
+        const statuses = ['Pending', 'In Progress', 'Completed', 'Cancelled'];
+        statuses.forEach(status => {
+          const option = document.createElement('option');
+          option.value = status;
+          option.textContent = status;
+          if (status === (order.status || 'Pending')) {
+            option.selected = true;
+          }
+          statusSelect.appendChild(option);
+        });
+        
+        statusSelect.onchange = function() {
+          updateCateringOrderStatus(order.orderId, order.rowIndex, this.value);
+        };
+        
+        orderActions.appendChild(statusSelect);
+        
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = function() {
+          deleteCateringOrder(order.orderId, order.rowIndex);
+        };
+        
+        orderActions.appendChild(deleteButton);
+        
+        if (order.pdfLink) {
+          const pdfButton = document.createElement('a');
+          pdfButton.className = 'pdf-button';
+          pdfButton.href = order.pdfLink;
+          pdfButton.target = '_blank';
+          pdfButton.textContent = 'View PDF';
+          orderActions.appendChild(pdfButton);
+        }
+        
+        orderDetails.appendChild(orderActions);
+        orderElement.appendChild(orderDetails);
+        
+        return orderElement;
+      }
+
+      function toggleDateSection(button) {
+        const dateSection = button.closest('.date-section');
+        const dateContent = dateSection.querySelector('.date-content');
+        
+        if (dateContent.style.display === 'none') {
+          dateContent.style.display = 'block';
+          button.textContent = '-';
+        } else {
+          dateContent.style.display = 'none';
+          button.textContent = '+';
+        }
+      }
+
+      function updateCateringOrderStatus(orderId, rowIndex, newStatus) {
+        console.log(`Updating status for order ${orderId} to ${newStatus}`);
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.success) {
+              showToast(`Status updated to ${newStatus}`, "success");
+              loadCateringOrders();
+            } else {
+              showToast(`Failed to update status: ${result.error || 'Unknown error'}`, "error");
+            }
+          })
+          .withFailureHandler(function(error) {
+            showToast(`Error: ${error.message || error}`, "error");
+          })
+          .updateCateringOrderStatus(orderId, rowIndex, newStatus);
+      }
+
+      function deleteCateringOrder(orderId, rowIndex) {
+        if (confirm(`Are you sure you want to delete order ${orderId}?`)) {
+          console.log(`Deleting order ${orderId}`);
+          google.script.run
+            .withSuccessHandler(function(result) {
+              if (result.success) {
+                showToast('Order deleted successfully', "success");
+                loadCateringOrders();
+              } else {
+                showToast(`Failed to delete order: ${result.error || 'Unknown error'}`, "error");
+              }
+            })
+            .withFailureHandler(function(error) {
+              showToast(`Error: ${error.message || error}`, "error");
+            })
+            .deleteCateringOrder(orderId, rowIndex);
+        }
+      }
+
+      // Call this on window load to initialize the toast container
+      window.addEventListener('load', function() {
+        initToasts();
+      });
+
+      function createTable(containerId, headers, data, updateCallback, options) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const title = options.title || '';
+        const isEditable = options.isEditable || false;
+        const range = options.range || '';
+        const extraRange = options.extraRange || '';
+        
+        let html = '';
+        if (title) {
+          if (containerId === 'vegetables' || containerId === 'garnishes') {
+            html += `<h4 class="${containerId}-title">${title}</h4>`;
+          } else {
+            html += `<h3>${title}</h3>`;
+          }
+        }
+        
+        html += '<table>';
+        html += '<tr>';
+        headers.forEach(header => {
+          html += `<th>${header}</th>`;
+        });
+        html += '</tr>';
+        
+        data.forEach((row, rowIndex) => {
+          if (row[0] && row[0].trim()) {
+            html += '<tr>';
+            row.forEach((cell, cellIndex) => {
+              if (cellIndex === 0) {
+                html += `<td data-label="${headers[cellIndex]}">${cell}</td>`;
+              } else {
+                const inputId = `${containerId}-${rowIndex}-${cellIndex}`;
+                let inputHtml = '';
+                
+                if (isEditable) {
+                  const inputCall = (cellIndex === 4 && extraRange) ? 
+                    `oninput="storeUpdate('${extraRange}', ${rowIndex + 1}, 1, this.value)"` : 
+                    `oninput="storeUpdate('${range}', ${rowIndex + 1}, ${cellIndex}, this.value)"`;
+                  
+                  inputHtml = `<input type="number" id="${inputId}" value="${cell || 0}" ${inputCall}>`;
+                } else {
+                  inputHtml = cell || '0';
+                }
+                
+                html += `<td data-label="${headers[cellIndex]}">${inputHtml}</td>`;
+              }
+            });
+            html += '</tr>';
+          }
+        });
+        
+        html += '</table>';
+        container.innerHTML = html;
+      }
+
+      function addCateringOrdersStyles() {
+        // This function can be empty or add dynamic styles if needed
+        console.log("Added catering order styles");
+      }
+
+      function completeInventory() {
+        alert("Inventory process completed successfully!");
+        
+        // Optional: you could redirect to the dashboard or reload the page
+        // window.location.reload();
+      }
+
+      function printPrepSheet() {
+        window.print();
+      }
+
+      function displayAuthorizedUsers(users) {
+        var usersTable = document.getElementById('authorized-users-table');
+        usersTable.innerHTML = '<tr><th>Email</th><th>Actions</th></tr>';
+        
+        if (Array.isArray(users) && users.length > 0) {
+          users.forEach((email, index) => {
+            var row = document.createElement('tr');
+            row.innerHTML = `
+              <td data-label="Email">${email}</td>
+              <td data-label="Actions">
+                <button onclick="removeAuthorizedUser(${index})" class="delete-button">Remove</button>
+              </td>
+            `;
+            usersTable.appendChild(row);
+          });
+        } else {
+          usersTable.innerHTML += '<tr><td colspan="2">No authorized users found</td></tr>';
+        }
+      }
+
+      function addAuthorizedUser() {
+        const email = document.getElementById('new-user-email').value.trim();
+        if (!email) {
+          showToast("Please enter an email address", "warning");
+          return;
+        }
+        
+        if (!email.includes('@') || !email.includes('.')) {
+          showToast("Please enter a valid email address", "warning");
+          return;
+        }
+        
+        google.script.run
+          .withSuccessHandler(function(users) {
+            displayAuthorizedUsers(users);
+            document.getElementById('new-user-email').value = '';
+            showToast("User added successfully", "success");
+          })
+          .withFailureHandler(function(error) {
+            showToast("Failed to add user: " + error.message, "error");
+          })
+          .addAuthorizedUser(email);
+      }
+
+      function removeAuthorizedUser(index) {
+        if (confirm("Are you sure you want to remove this user?")) {
+          google.script.run
+            .withSuccessHandler(function(users) {
+              displayAuthorizedUsers(users);
+              showToast("User removed successfully", "success");
+            })
+            .withFailureHandler(function(error) {
+              showToast("Failed to remove user: " + error.message, "error");
+            })
+            .removeAuthorizedUser(index);
+        }
+      }
+
+      function saveSettings() {
+        const updates = [];
+        
+        // Cookie buffer
+        updates.push({
+          sheet: "D: Cookies",
+          range: "C1",
+          value: parseFloat(document.getElementById('buffer-cookies').value || 0) / 100
+        });
+        
+        // Medley buffers by day
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L39",
+          value: parseFloat(document.getElementById('buffer-medley-sunday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L40",
+          value: parseFloat(document.getElementById('buffer-medley-monday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L41",
+          value: parseFloat(document.getElementById('buffer-medley-tuesday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L42",
+          value: parseFloat(document.getElementById('buffer-medley-wednesday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L43",
+          value: parseFloat(document.getElementById('buffer-medley-thursday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L44",
+          value: parseFloat(document.getElementById('buffer-medley-friday').value || 0) / 100
+        });
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "L45",
+          value: parseFloat(document.getElementById('buffer-medley-saturday').value || 0) / 100
+        });
+        
+        // Catering buffer
+        updates.push({
+          sheet: "D: Medley Projections",
+          range: "B50",
+          value: parseFloat(document.getElementById('buffer-catering-medley').value || 0) / 100
+        });
+        
+        // Sauce buffer par days
+        const sauceBufferParTable = document.getElementById('sauce-buffer-par-table');
+        const sauceBufferParRows = sauceBufferParTable.querySelectorAll('tr');
+        for (let i = 1; i < sauceBufferParRows.length; i++) { // Skip header row
+          const selectElement = sauceBufferParRows[i].querySelector('select');
+          if (selectElement) {
+            updates.push({
+              sheet: "D: Medley Projections",
+              range: `C${i + 4}`, // C5 is the first buffer par value
+              value: parseInt(selectElement.value)
+            });
+          }
+        }
+        
+        // Sauce buffer amount days
+        const sauceBufferAmountTable = document.getElementById('sauce-buffer-amount-table');
+        const sauceBufferAmountRows = sauceBufferAmountTable.querySelectorAll('tr');
+        for (let i = 1; i < sauceBufferAmountRows.length; i++) { // Skip header row
+          const selectElement = sauceBufferAmountRows[i].querySelector('select');
+          if (selectElement) {
+            updates.push({
+              sheet: "D: Medley Projections",
+              range: `B${i + 15}`, // B16 is the first buffer amount value
+              value: parseInt(selectElement.value)
+            });
+          }
+        }
+        
+        // Vegetable hold times
+        const vegHoldTimesTable = document.getElementById('vegetable-hold-times-table');
+        const vegRows = vegHoldTimesTable.querySelectorAll('tr');
+        for (let i = 1; i < vegRows.length; i++) { // Skip header row
+          const minDaysSelect = vegRows[i].querySelector(`#veg-min-days-${i-1}`);
+          const maxDaysSelect = vegRows[i].querySelector(`#veg-max-days-${i-1}`);
+          
+          if (minDaysSelect && maxDaysSelect) {
+            updates.push({
+              sheet: "Detailed To Do",
+              range: `D${i + 19}`, // D20 is the first min days value
+              value: parseInt(minDaysSelect.value)
+            });
+            updates.push({
+              sheet: "Detailed To Do",
+              range: `E${i + 19}`, // E20 is the first max days value
+              value: parseInt(maxDaysSelect.value)
+            });
+          }
+        }
+        
+        if (updates.length > 0) {
+          console.log("Saving settings with updates:", updates);
+          google.script.run
+            .withSuccessHandler(function() {
+              showToast("Settings saved successfully!", "success");
+            })
+            .withFailureHandler(function(error) {
+              showToast("Failed to save settings: " + error.message, "error");
+            })
+            .saveSettings(updates);
+        } else {
+          showToast("No settings changes detected", "info");
+        }
+      }
+
+      function moveToNext(event, index, section) {
+        if (event.key === 'Enter') {
+          let nextId;
+          const medleyCount = cateringMedleyCount;
+          
+          if (section === 'catering-today') {
+            if (index < medleyCount - 1) {
+              nextId = `catering-today-${index + 1}`;
+            } else {
+              nextId = `catering-day2-0`;
+            }
+          } else if (section === 'catering-day2') {
+            if (index < medleyCount - 1) {
+              nextId = `catering-day2-${index + 1}`;
+            } else {
+              nextId = `catering-day3-0`;
+            }
+          } else if (section === 'catering-day3') {
+            if (index < medleyCount - 1) {
+              nextId = `catering-day3-${index + 1}`;
+            } else {
+              nextId = `catering-day4-0`;
+            }
+          } else if (section === 'catering-day4') {
+            if (index < medleyCount - 1) {
+              nextId = `catering-day4-${index + 1}`;
+            } else {
+              nextId = `catering-day5-0`;
+            }
+          } else if (section === 'catering-day5') {
+            if (index < medleyCount - 1) {
+              nextId = `catering-day5-${index + 1}`;
+            } else {
+              nextId = null;
+            }
+          }
+
+          if (nextId) {
+            var nextInput = document.getElementById(nextId);
+            if (nextInput) {
+              nextInput.focus();
+              nextInput.select();
+              event.preventDefault();
+            }
+          }
+        }
+      }
+
+      // Add this CSS to your existing styles section
+      function addToastStyles() {
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+          .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+          }
+          
+          .toast {
+            min-width: 250px;
+            margin-top: 10px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            transform: translateX(120%);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            color: white;
+          }
+          
+          .toast.show {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          
+          .toast.success {
+            background-color: #4CAF50;
+          }
+          
+          .toast.error {
+            background-color: #F44336;
+          }
+          
+          .toast.info {
+            background-color: #2196F3;
+          }
+          
+          .toast.warning {
+            background-color: #FFC107;
+            color: #333;
+          }
+          
+          .toast-message {
+            flex-grow: 1;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+          }
+          
+          .toast-close {
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1;
+            padding: 0 0 0 10px;
+            margin: 0;
+          }
+        `;
+        document.head.appendChild(styleElement);
+      }
+
+      // Initialize toast container
+      function initToasts() {
+        if (!document.querySelector('.toast-container')) {
+          const toastContainer = document.createElement('div');
+          toastContainer.className = 'toast-container';
+          document.body.appendChild(toastContainer);
+        }
+        addToastStyles();
+      }
+
+      // Show a toast notification
+      function showToast(message, type = 'success', duration = 3000) {
+        initToasts();
+        
+        const toastContainer = document.querySelector('.toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const toastMessage = document.createElement('div');
+        toastMessage.className = 'toast-message';
+        toastMessage.textContent = message;
+        
+        const closeButton = document.createElement('button');
+        closeButton.className = 'toast-close';
+        closeButton.innerHTML = '&times;';
+        closeButton.addEventListener('click', () => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(120%)';
+          setTimeout(() => {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        });
+        
+        toast.appendChild(toastMessage);
+        toast.appendChild(closeButton);
+        toastContainer.appendChild(toast);
+        
+        // Trigger reflow to enable animation
+        setTimeout(() => {
+          toast.classList.add('show');
+        }, 10);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+          if (toast.classList.contains('show')) {
+            toast.classList.remove('show');
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(120%)';
+            setTimeout(() => {
+              if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+              }
+            }, 300);
+          }
+        }, duration);
+        
+        return toast;
+      }
+
+      
+
+      // This ensures that loadInventory is called when the page loads
+      window.onload = function() {
+        console.log("Window loaded, calling loadInventory...");
+        loadInventory();
+      };
+    </script>
+  </body>
+</html>
