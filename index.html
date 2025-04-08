@@ -1127,9 +1127,11 @@
       }
 
       function displayCalendarEvents(events) {
+        console.log("Displaying calendar events:", events);
         const container = document.getElementById('calendarEvents');
-        if (!events || (!events.todayEvents.length && !events.upcomingEvents.length && !events.ongoingEvents.length)) {
-          container.innerHTML = '<p>No events to display.</p>';
+        
+        if (!events || (!events.todayEvents && !events.upcomingEvents && !events.ongoingEvents)) {
+          container.innerHTML = '<p>No events data received from server.</p>';
           return;
         }
 
@@ -1137,7 +1139,7 @@
 
         // Section 1: Going Live Today!
         html += '<h4>Going Live Today!</h4>';
-        if (events.todayEvents.length === 0) {
+        if (!events.todayEvents || events.todayEvents.length === 0) {
           html += '<p>No events going live today.</p>';
         } else {
           html += '<table>';
@@ -1150,7 +1152,7 @@
 
         // Section 2: Upcoming Events/Promos (next 7 days)
         html += '<h4>Upcoming Events/Promos</h4>';
-        if (events.upcomingEvents.length === 0) {
+        if (!events.upcomingEvents || events.upcomingEvents.length === 0) {
           html += '<p>No upcoming events in the next 7 days.</p>';
         } else {
           html += '<table>';
@@ -1163,7 +1165,7 @@
 
         // Section 3: Ongoing Events/Promos (started before today, still active)
         html += '<h4>Ongoing Events/Promos</h4>';
-        if (events.ongoingEvents.length === 0) {
+        if (!events.ongoingEvents || events.ongoingEvents.length === 0) {
           html += '<p>No ongoing events.</p>';
         } else {
           html += '<table>';
