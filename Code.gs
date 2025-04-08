@@ -690,54 +690,59 @@ function getCalendarEvents() {
   };
   
   calendarIds.forEach(calendarId => {
-    const calendar = CalendarApp.getCalendarById(calendarId);
-    if (!calendar) {
-      Logger.log(`Calendar not found or access denied: ${calendarId}`);
-      return;
+    try {
+      const calendar = CalendarApp.getCalendarById(calendarId);
+      if (!calendar) {
+        Logger.log(`Calendar not found or access denied: ${calendarId}`);
+        return;
+      }
+      
+      const events = calendar.getEvents(yesterday, nextWeek);
+      const timeZone = calendar.getTimeZone();
+      
+      Logger.log(`Fetched ${events.length} events from calendar: ${calendarId}`);
+      
+      events.forEach(event => {
+        const title = event.getTitle();
+        let start, end;
+        
+        const startDate = new Date(event.getStartTime());
+        const endDate = new Date(event.getEndTime());
+        
+        if (event.isAllDayEvent()) {
+          start = Utilities.formatDate(startDate, timeZone, 'MMMM dd');
+          const adjustedEndDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
+          end = Utilities.formatDate(adjustedEndDate, timeZone, 'MMMM dd');
+        } else {
+          start = Utilities.formatDate(startDate, timeZone, 'MMMM dd, h:mm a');
+          end = Utilities.formatDate(endDate, timeZone, 'MMMM dd, h:mm a');
+        }
+        
+        const eventData = { title, start, end, startDate, endDate };
+        
+        // Categorize the event
+        const startDateOnly = new Date(startDate);
+        startDateOnly.setHours(0, 0, 0, 0);
+        
+        if (startDateOnly.getTime() === today.getTime()) {
+          allEvents.todayEvents.push(eventData);
+        } else if (startDateOnly.getTime() > today.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
+          allEvents.upcomingEvents.push(eventData);
+        } else if (startDateOnly.getTime() < today.getTime() && endDate.getTime() >= today.getTime()) {
+          allEvents.ongoingEvents.push(eventData);
+        }
+      });
+    } catch (error) {
+      Logger.log(`Error fetching events from calendar ${calendarId}: ${error.message}`);
     }
-    
-    const events = calendar.getEvents(yesterday, nextWeek);
-    const timeZone = calendar.getTimeZone();
-    
-    events.forEach(event => {
-      const title = event.getTitle();
-      let start, end;
-      
-      const startDate = new Date(event.getStartTime());
-      const endDate = new Date(event.getEndTime());
-      
-      if (event.isAllDayEvent()) {
-        start = Utilities.formatDate(startDate, timeZone, 'MMMM dd');
-        const adjustedEndDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
-        end = Utilities.formatDate(adjustedEndDate, timeZone, 'MMMM dd');
-      } else {
-        start = Utilities.formatDate(startDate, timeZone, 'MMMM dd, h:mm a');
-        end = Utilities.formatDate(endDate, timeZone, 'MMMM dd, h:mm a');
-      }
-      
-      const eventData = { title, start, end, startDate, endDate };
-      
-      // Categorize the event
-      const startDateOnly = new Date(startDate);
-      startDateOnly.setHours(0, 0, 0, 0);
-      
-      if (startDateOnly.getTime() === today.getTime()) {
-        // Today’s events
-        allEvents.todayEvents.push(eventData);
-      } else if (startDateOnly.getTime() > today.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
-        // Upcoming events (next 7 days)
-        allEvents.upcomingEvents.push(eventData);
-      } else if (startDateOnly.getTime() < today.getTime() && endDate.getTime() >= today.getTime()) {
-        // Ongoing events (started before today, still active)
-        allEvents.ongoingEvents.push(eventData);
-      }
-    });
   });
   
   // Sort events within each category by start date
   allEvents.todayEvents.sort((a, b) => a.startDate - b.startDate);
   allEvents.upcomingEvents.sort((a, b) => a.startDate - b.startDate);
   allEvents.ongoingEvents.sort((a, b) => a.startDate - b.startDate);
+  
+  Logger.log(`Final event counts - Today: ${allEvents.todayEvents.length}, Upcoming: ${allEvents.upcomingEvents.length}, Ongoing: ${allEvents.ongoingEvents.length}`);
   
   return allEvents;
 }
