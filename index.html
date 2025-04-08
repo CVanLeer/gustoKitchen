@@ -2305,10 +2305,44 @@
       }
 
       function completeInventory() {
-        alert("Inventory process completed successfully!");
+        console.log("Completing inventory and displaying prep sheet...");
+        google.script.run
+          .withSuccessHandler(function(prepData) {
+            displayPrepSheet(prepData);
+          })
+          .withFailureHandler(function(error) {
+            alert("Failed to complete inventory: " + error.message); // Fallback alert
+          })
+          .processInventory([]); // Passing empty updates to fetch current data
+      }
+
+      // Add this new function in the <script> section
+      function displayPrepSheet(prepData) {
+        console.log("Displaying prep sheet data:", prepData);
+        const prepSheetDiv = document.getElementById('prepSheet');
         
-        // Optional: you could redirect to the dashboard or reload the page
-        // window.location.reload();
+        if (!prepData || prepData.length === 0) {
+          prepSheetDiv.innerHTML = '<p>No prep sheet data available.</p>';
+          return;
+        }
+
+        let html = '<h3>Prep Sheet</h3>';
+        html += '<table>';
+        html += '<tr><th>Item</th><th>Amount</th><th>Unit</th><th>Notes</th></tr>';
+        
+        prepData.forEach((row, index) => {
+          if (row[0] && row[0].trim()) { // Check if item name exists
+            html += '<tr>';
+            html += `<td data-label="Item">${row[0]}</td>`; // Column A: Item
+            html += `<td data-label="Amount">${row[1] || ''}</td>`; // Column B: Amount
+            html += `<td data-label="Unit">${row[2] || ''}</td>`; // Column C: Unit
+            html += `<td data-label="Notes">${row[3] || ''}</td>`; // Column D: Notes
+            html += '</tr>';
+          }
+        });
+        
+        html += '</table>';
+        prepSheetDiv.innerHTML = html;
       }
 
       function printPrepSheet() {
