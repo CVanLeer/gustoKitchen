@@ -266,6 +266,11 @@
         word-wrap: break-word; /* Ensure long words break to fit */
         min-width: 100px; /* Set a minimum width for columns to prevent excessive shrinking */
       }
+
+      .calendar-events h4 {
+        margin-top: 20px;
+      }
+
       .settings-row {
         display: flex;
         align-items: center;
@@ -1123,17 +1128,52 @@
 
       function displayCalendarEvents(events) {
         const container = document.getElementById('calendarEvents');
-        if (!events || events.length === 0) {
-          container.innerHTML = '<p>No upcoming events in the next 7 days.</p>';
+        if (!events || (!events.todayEvents.length && !events.upcomingEvents.length && !events.ongoingEvents.length)) {
+          container.innerHTML = '<p>No events to display.</p>';
           return;
         }
-        
-        let html = '<table>';
-        html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
-        events.forEach(event => {
-          html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
-        });
-        html += '</table>';
+
+        let html = '';
+
+        // Section 1: Going Live Today!
+        html += '<h4>Going Live Today!</h4>';
+        if (events.todayEvents.length === 0) {
+          html += '<p>No events going live today.</p>';
+        } else {
+          html += '<table>';
+          html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
+          events.todayEvents.forEach(event => {
+            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+          });
+          html += '</table>';
+        }
+
+        // Section 2: Upcoming Events/Promos (next 7 days)
+        html += '<h4>Upcoming Events/Promos</h4>';
+        if (events.upcomingEvents.length === 0) {
+          html += '<p>No upcoming events in the next 7 days.</p>';
+        } else {
+          html += '<table>';
+          html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
+          events.upcomingEvents.forEach(event => {
+            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+          });
+          html += '</table>';
+        }
+
+        // Section 3: Ongoing Events/Promos (started before today, still active)
+        html += '<h4>Ongoing Events/Promos</h4>';
+        if (events.ongoingEvents.length === 0) {
+          html += '<p>No ongoing events.</p>';
+        } else {
+          html += '<table>';
+          html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
+          events.ongoingEvents.forEach(event => {
+            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+          });
+          html += '</table>';
+        }
+
         container.innerHTML = html;
       }
 
@@ -2317,6 +2357,7 @@
       }
 
       // Add this new function in the <script> section
+      // Replace the existing displayPrepSheet function in Index.html
       function displayPrepSheet(prepData) {
         console.log("Displaying prep sheet data:", prepData);
         const prepSheetDiv = document.getElementById('prepSheet');
@@ -2331,14 +2372,13 @@
         html += '<tr><th>Item</th><th>Amount</th><th>Unit</th><th>Notes</th></tr>';
         
         prepData.forEach((row, index) => {
-          if (row[0] && row[0].trim()) { // Check if item name exists
-            html += '<tr>';
-            html += `<td data-label="Item">${row[0]}</td>`; // Column A: Item
-            html += `<td data-label="Amount">${row[1] || ''}</td>`; // Column B: Amount
-            html += `<td data-label="Unit">${row[2] || ''}</td>`; // Column C: Unit
-            html += `<td data-label="Notes">${row[3] || ''}</td>`; // Column D: Notes
-            html += '</tr>';
-          }
+          // Remove the condition that checks for row[0].trim()
+          html += '<tr>';
+          html += `<td data-label="Item">${row[0] || ''}</td>`; // Column A: Item (allow empty)
+          html += `<td data-label="Amount">${row[1] || ''}</td>`; // Column B: Amount
+          html += `<td data-label="Unit">${row[2] || ''}</td>`; // Column C: Unit
+          html += `<td data-label="Notes">${row[3] || ''}</td>`; // Column D: Notes
+          html += '</tr>';
         });
         
         html += '</table>';
