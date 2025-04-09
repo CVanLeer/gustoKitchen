@@ -110,6 +110,7 @@ function getInventoryData() {
     };
     Logger.log("getInventoryData: Fetched catering medleys data");
 
+    // Reintroduce calendar events
     data.calendarEvents = getCalendarEvents();
     Logger.log(`getInventoryData: Calendar events summary - Today: ${data.calendarEvents.todayEvents.length}, Upcoming: ${data.calendarEvents.upcomingEvents.length}, Ongoing: ${data.calendarEvents.ongoingEvents.length}`);
     
@@ -117,80 +118,15 @@ function getInventoryData() {
     data.overview = {
       date: Utilities.formatDate(today, "EST", "MMMM dd, yyyy"),
       dayOfWeek: Utilities.formatDate(today, "EST", "EEEE"),
-      calendarEvents: data.calendarEvents
+      calendarEvents: data.calendarEvents,
+      weather: { temp: "N/A", description: "Disabled for debugging" }, // Still disabled
+      hourlyWeather: [], // Still disabled
+      salesProjections: [0, 0, 0, 0, 0, 0, 0], // Simplified
+      salesOverrides: ['', '', '', '', '', '', ''], // Simplified
+      productMix: { names: [], averages: [], overrides: [] } // Simplified
     };
-    Logger.log("getInventoryData: Set overview date and calendar events");
+    Logger.log("getInventoryData: Set overview data");
 
-    var cacheSheet = spreadsheet.getSheetByName("WeatherCache");
-    if (!cacheSheet) {
-      cacheSheet = spreadsheet.insertSheet("WeatherCache");
-      cacheSheet.getRange("A1").setValue("Last Updated");
-      cacheSheet.getRange("B1").setValue("Temperature");
-      cacheSheet.getRange("C1").setValue("Description");
-    }
-    Logger.log("getInventoryData: Accessed WeatherCache sheet");
-
-    var lastUpdated = cacheSheet.getRange("A2").getValue();
-    var cachedTemp = cacheSheet.getRange("B2").getValue();
-    var cachedDesc = cacheSheet.getRange("C2").getValue();
-    var now = new Date();
-    var oneHour = 60 * 60 * 1000;
-
-    if (lastUpdated && (now - new Date(lastUpdated)) < oneHour && cachedTemp && cachedDesc) {
-      data.overview.weather = {
-        temp: Math.round(cachedTemp),
-        description: cachedDesc
-      };
-      Logger.log("getInventoryData: Used cached weather data");
-    } else {
-      var weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&appid=${WEATHER_API_KEY}&units=imperial`;
-      try {
-        var response = UrlFetchApp.fetch(weatherUrl);
-        var json = JSON.parse(response.getContentText());
-        data.overview.weather = {
-          temp: Math.round(json.main.temp),
-          description: json.weather[0].description
-        };
-        cacheSheet.getRange("A2").setValue(now);
-        cacheSheet.getRange("B2").setValue(data.overview.weather.temp);
-        cacheSheet.getRange("C2").setValue(data.overview.weather.description);
-        Logger.log("getInventoryData: Fetched and cached new weather data");
-      } catch (e) {
-        Logger.log(`getInventoryData: Weather fetch error - ${e.message}`);
-        data.overview.weather = { temp: "N/A", description: "Unable to fetch weather data" };
-      }
-    }
-
-    var hourlyWeatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&exclude=current,minutely,daily,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
-    try {
-      var hourlyResponse = UrlFetchApp.fetch(hourlyWeatherUrl);
-      var hourlyJson = JSON.parse(hourlyResponse.getContentText());
-      data.overview.hourlyWeather = hourlyJson.hourly;
-      Logger.log("getInventoryData: Fetched hourly weather data");
-    } catch (e) {
-      Logger.log(`getInventoryData: Hourly weather fetch error - ${e.message}`);
-      data.overview.hourlyWeather = [];
-    }
-    
-    var projectionSheet = spreadsheet.getSheetByName("D: Medley Projections");
-    if (!projectionSheet) {
-      throw new Error("Sheet 'D: Medley Projections' not found");
-    }
-    data.overview.salesProjections = projectionSheet.getRange("B2:H2").getValues()[0];
-    data.overview.salesOverrides = projectionSheet.getRange("B3:H3").getValues()[0];
-    Logger.log("getInventoryData: Fetched sales projections");
-
-    var variableDataSheet = spreadsheet.getSheetByName("D: Variable Data");
-    if (!variableDataSheet) {
-      throw new Error("Sheet 'D: Variable Data' not found");
-    }
-    data.overview.productMix = {
-      names: variableDataSheet.getRange("A6:A13").getValues().flat(),
-      averages: variableDataSheet.getRange("G6:G13").getValues().flat(),
-      overrides: variableDataSheet.getRange("F6:F13").getValues().flat()
-    };
-    Logger.log("getInventoryData: Fetched product mix data");
-    
     Logger.log(`getInventoryData: Final data object summary - Overview date: ${data.overview.date}, Calendar events present: ${data.overview.calendarEvents ? 'Yes' : 'No'}`);
     return data;
   } catch (error) {
@@ -400,26 +336,27 @@ function saveSettings(updates) {
 
 function getCateringOrders() {
   try {
+    Logger.log("getCateringOrders: Starting catering orders fetch");
     const CATERING_SPREADSHEET_ID = "1HZNw30JH3oHpld1EZ8lybjP9GqpuoS9gewAHuo75J0w";
     
-    // Try to open the spreadsheet
     let cateringSpreadsheet;
     try {
       cateringSpreadsheet = SpreadsheetApp.openById(CATERING_SPREADSHEET_ID);
+      Logger.log("getCateringOrders: Accessed catering spreadsheet");
     } catch (e) {
-      Logger.log("Error opening catering spreadsheet: " + e.message);
-      return []; // Return empty array instead of error when spreadsheet can't be opened
+      Logger.log("getCateringOrders: Error opening catering spreadsheet: " + e.message);
+      return [];
     }
     
     const cateringSheet = cateringSpreadsheet.getSheetByName("Catering Orders");
     if (!cateringSheet) {
-      Logger.log("Catering Orders sheet not found");
-      return []; // Return empty array when sheet doesn't exist
+      Logger.log("getCateringOrders: Catering Orders sheet not found");
+      return [];
     }
     
     const data = cateringSheet.getDataRange().getValues();
     if (data.length <= 1) {
-      // Only header row exists, no actual orders
+      Logger.log("getCateringOrders: No catering orders found (only header row)");
       return [];
     }
     
@@ -441,8 +378,8 @@ function getCateringOrders() {
     const travelTimeCol = findColumnIndex("Travel Time to Restaurant");
     
     if (dateCol === -1 || itemsCol === -1) {
-      Logger.log("Required columns not found");
-      return []; // Return empty array when required columns are missing
+      Logger.log("getCateringOrders: Required columns not found");
+      return [];
     }
     
     const today = new Date();
@@ -461,8 +398,7 @@ function getCateringOrders() {
         if (isNaN(orderDate.getTime())) continue;
         orderDate.setHours(0, 0, 0, 0);
       } catch (e) {
-        // Skip rows with invalid dates
-        Logger.log("Invalid date in row " + i + ": " + e.message);
+        Logger.log("getCateringOrders: Invalid date in row " + i + ": " + e.message);
         continue;
       }
       
@@ -473,8 +409,7 @@ function getCateringOrders() {
             itemsJson = JSON.parse(row[itemsCol]);
           }
         } catch (e) {
-          Logger.log("Error parsing JSON in row " + i + ": " + e.message);
-          // Use default empty object structure instead of failing
+          Logger.log("getCateringOrders: Error parsing JSON in row " + i + ": " + e.message);
         }
         
         const order = {
@@ -497,8 +432,8 @@ function getCateringOrders() {
       }
     }
     
-    // If no orders were found for the next 7 days, return empty array
     if (orders.length === 0) {
+      Logger.log("getCateringOrders: No orders found for the next 7 days");
       return [];
     }
     
@@ -517,10 +452,10 @@ function getCateringOrders() {
       return { date, formattedDate: formatted, orders: dayOrders, totals: dailyTotals };
     });
     
+    Logger.log(`getCateringOrders: Returning ${result.length} grouped orders`);
     return result;
   } catch (error) {
-    Logger.log("Error in getCateringOrders: " + error.message);
-    // Return empty array instead of error object
+    Logger.log("getCateringOrders: Error - " + error.message);
     return [];
   }
 }
@@ -783,7 +718,13 @@ function getCalendarEvents() {
         
         Logger.log(`getCalendarEvents: Event ${title} - StartDateOnly (normalized): ${startDateOnly}, Today (normalized): ${todayInTimeZone}`);
         
-        const eventData = { title, start, end, startDate, endDate };
+        const eventData = {
+          title,
+          start,
+          end,
+          startDate: startDate.toISOString(), // Convert to string
+          endDate: endDate.toISOString() // Convert to string
+        };
         
         if (startDateOnly.getTime() === todayInTimeZone.getTime()) {
           allEvents.todayEvents.push(eventData);
@@ -798,9 +739,9 @@ function getCalendarEvents() {
     }
   });
   
-  allEvents.todayEvents.sort((a, b) => a.startDate - b.startDate);
-  allEvents.upcomingEvents.sort((a, b) => a.startDate - b.startDate);
-  allEvents.ongoingEvents.sort((a, b) => a.startDate - b.startDate);
+  allEvents.todayEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  allEvents.upcomingEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  allEvents.ongoingEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
   
   Logger.log(`getCalendarEvents: Final event counts - Today: ${allEvents.todayEvents.length}, Upcoming: ${allEvents.upcomingEvents.length}, Ongoing: ${allEvents.ongoingEvents.length}`);
   
@@ -810,4 +751,12 @@ function getCalendarEvents() {
 // Expose the function to the client-side
 function getCalendarEventsForWebApp() {
   return getCalendarEvents();
+}
+
+function testFunction() {
+  Logger.log("testFunction: Executing test function");
+  return {
+    test: "This is a test response",
+    timestamp: new Date().toISOString()
+  };
 }
