@@ -3,39 +3,49 @@ var CHAMBLEE_LAT = 33.8922;
 var CHAMBLEE_LON = -84.2988;
 
 function doGet() {
-  const userEmail = Session.getActiveUser().getEmail();
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const settingsSheet = spreadsheet.getSheetByName('Settings');
-  
-  if (!settingsSheet) {
-    ensureSettingsSheet();
-  }
-  
-  // Check if validation is disabled
-  const disableValidation = settingsSheet.getRange("B3").getValue();
-  const validationDisabled = disableValidation.toString().toLowerCase() === "yes";
-
-  // If validation is not disabled, perform user check
-  if (!validationDisabled) {
-    const allowedUsers = settingsSheet.getRange('D1:D10')
-      .getValues()
-      .flat()
-      .filter(Boolean);
-
-    if (!userEmail || !allowedUsers.includes(userEmail)) {
-      return HtmlService.createHtmlOutput(`
-        <h2>Access Denied</h2>
-        <p>Sorry, you (${userEmail || 'anonymous'}) are not authorized to access this application.</p>
-        <p>Please contact the administrator to request access.</p>
-      `);
+  Logger.log("doGet: Starting app initialization");
+  try {
+    const userEmail = Session.getActiveUser().getEmail();
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const settingsSheet = spreadsheet.getSheetByName('Settings');
+    
+    if (!settingsSheet) {
+      Logger.log("doGet: Settings sheet not found, creating...");
+      ensureSettingsSheet();
     }
-  }
+    
+    // Check if validation is disabled
+    const disableValidation = settingsSheet.getRange("B3").getValue();
+    const validationDisabled = disableValidation.toString().toLowerCase() === "yes";
+    Logger.log(`doGet: Validation disabled: ${validationDisabled}`);
 
-  // If validation is disabled or user is authorized, proceed
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Live with gusto! Inventory & Prep - Chamblee')
-    .setWidth(800)
-    .setHeight(600);
+    // If validation is not disabled, perform user check
+    if (!validationDisabled) {
+      const allowedUsers = settingsSheet.getRange('D1:D10')
+        .getValues()
+        .flat()
+        .filter(Boolean);
+      Logger.log(`doGet: Allowed users: ${allowedUsers}`);
+
+      if (!userEmail || !allowedUsers.includes(userEmail)) {
+        Logger.log(`doGet: Access denied for user: ${userEmail || 'anonymous'}`);
+        return HtmlService.createHtmlOutput(`
+          <h2>Access Denied</h2>
+          <p>Sorry, you (${userEmail || 'anonymous'}) are not authorized to access this application.</p>
+          <p>Please contact the administrator to request access.</p>
+        `);
+      }
+    }
+
+    Logger.log("doGet: User authorized, serving Index.html");
+    return HtmlService.createHtmlOutputFromFile('Index')
+      .setTitle('Live with gusto! Inventory & Prep - Chamblee')
+      .setWidth(800)
+      .setHeight(600);
+  } catch (error) {
+    Logger.log(`doGet: Error - ${error.message}`);
+    return HtmlService.createHtmlOutput(`<h2>Error</h2><p>Failed to initialize app: ${error.message}</p>`);
+  }
 }
 
 function updateProductMixOverrides(updates) {
@@ -48,119 +58,162 @@ function updateProductMixOverrides(updates) {
 }
 
 function getInventoryData() {
-  var data = {};
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = spreadsheet.getSheetByName("InventoryPrep");
-
-  data.cookies = {
-    names: sheet.getRange("B4:B6").getValues().flat(),
-    amounts: sheet.getRange("C4:C6").getValues().flat()
-  };
-  
-  data.medleys = {
-    names: sheet.getRange("B9:B16").getValues().flat(),
-    inventory: sheet.getRange("C9:E16").getValues(),
-    catering: sheet.getRange("G9:K16").getValues()
-  };
-  
-  data.sauces = {
-    names: sheet.getRange("B19:B27").getValues().flat(),
-    inventory: sheet.getRange("C19:E27").getValues(),
-    quarts: sheet.getRange("G19:G27").getValues().flat()
-  };
-  
-  data.garnishes = {
-    names: sheet.getRange("B30:B34").getValues().flat(),
-    inventory: sheet.getRange("C30:E34").getValues(),
-    quarts: sheet.getRange("G30:G34").getValues().flat()
-  };
-  
-  data.vegetables = {
-    names: sheet.getRange("B36:B55").getValues().flat(),
-    amounts: sheet.getRange("C36:C55").getValues().flat()
-  };
-  
-  data.dressings = {
-    names: sheet.getRange("B57:B64").getValues().flat(),
-    amounts: sheet.getRange("C57:C64").getValues().flat()
-  };
-  
-  data.cateringMedleys = {
-    names: sheet.getRange("B9:B16").getValues().flat().map(name => name.trim()),
-    portions: sheet.getRange("G9:K16").getValues()
-  };
-
-  data.calendarEvents = getCalendarEvents();
-  
-  var today = new Date();
-  data.overview = {
-    date: Utilities.formatDate(today, "EST", "MMMM dd, yyyy"),
-    dayOfWeek: Utilities.formatDate(today, "EST", "EEEE")
-  };
-  
-  var cacheSheet = spreadsheet.getSheetByName("WeatherCache");
-  if (!cacheSheet) {
-    cacheSheet = spreadsheet.insertSheet("WeatherCache");
-    cacheSheet.getRange("A1").setValue("Last Updated");
-    cacheSheet.getRange("B1").setValue("Temperature");
-    cacheSheet.getRange("C1").setValue("Description");
-  }
-
-  var lastUpdated = cacheSheet.getRange("A2").getValue();
-  var cachedTemp = cacheSheet.getRange("B2").getValue();
-  var cachedDesc = cacheSheet.getRange("C2").getValue();
-  var now = new Date();
-  var oneHour = 60 * 60 * 1000;
-
-  if (lastUpdated && (now - new Date(lastUpdated)) < oneHour && cachedTemp && cachedDesc) {
-    data.overview.weather = {
-      temp: Math.round(cachedTemp),
-      description: cachedDesc
-    };
-  } else {
-    var weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&appid=${WEATHER_API_KEY}&units=imperial`;
-    try {
-      var response = UrlFetchApp.fetch(weatherUrl);
-      var json = JSON.parse(response.getContentText());
-      data.overview.weather = {
-        temp: Math.round(json.main.temp),
-        description: json.weather[0].description
-      };
-      cacheSheet.getRange("A2").setValue(now);
-      cacheSheet.getRange("B2").setValue(data.overview.weather.temp);
-      cacheSheet.getRange("C2").setValue(data.overview.weather.description);
-    } catch (e) {
-      data.overview.weather = { temp: "N/A", description: "Unable to fetch weather data" };
-    }
-  }
-
-  var hourlyWeatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&exclude=current,minutely,daily,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
   try {
-    var hourlyResponse = UrlFetchApp.fetch(hourlyWeatherUrl);
-    var hourlyJson = JSON.parse(hourlyResponse.getContentText());
-    data.overview.hourlyWeather = hourlyJson.hourly;
-  } catch (e) {
-    data.overview.hourlyWeather = [];
-  }
-  
-  var projectionSheet = spreadsheet.getSheetByName("D: Medley Projections");
-  if (!projectionSheet) {
-    throw new Error("Sheet 'D: Medley Projections' not found");
-  }
-  data.overview.salesProjections = projectionSheet.getRange("B2:H2").getValues()[0];
-  data.overview.salesOverrides = projectionSheet.getRange("B3:H3").getValues()[0];
+    Logger.log("getInventoryData: Starting data fetch");
+    var data = {};
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = spreadsheet.getSheetByName("InventoryPrep");
+    Logger.log("getInventoryData: Accessed InventoryPrep sheet");
 
-  var variableDataSheet = spreadsheet.getSheetByName("D: Variable Data");
-  if (!variableDataSheet) {
-    throw new Error("Sheet 'D: Variable Data' not found");
+    data.cookies = {
+      names: sheet.getRange("B4:B6").getValues().flat(),
+      amounts: sheet.getRange("C4:C6").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched cookies data");
+
+    data.medleys = {
+      names: sheet.getRange("B9:B16").getValues().flat(),
+      inventory: sheet.getRange("C9:E16").getValues(),
+      catering: sheet.getRange("G9:K16").getValues()
+    };
+    Logger.log("getInventoryData: Fetched medleys data");
+
+    data.sauces = {
+      names: sheet.getRange("B19:B27").getValues().flat(),
+      inventory: sheet.getRange("C19:E27").getValues(),
+      quarts: sheet.getRange("G19:G27").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched sauces data");
+
+    data.garnishes = {
+      names: sheet.getRange("B30:B34").getValues().flat(),
+      inventory: sheet.getRange("C30:E34").getValues(),
+      quarts: sheet.getRange("G30:G34").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched garnishes data");
+
+    data.vegetables = {
+      names: sheet.getRange("B36:B55").getValues().flat(),
+      amounts: sheet.getRange("C36:C55").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched vegetables data");
+
+    data.dressings = {
+      names: sheet.getRange("B57:B64").getValues().flat(),
+      amounts: sheet.getRange("C57:C64").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched dressings data");
+
+    data.cateringMedleys = {
+      names: sheet.getRange("B9:B16").getValues().flat().map(name => name.trim()),
+      portions: sheet.getRange("G9:K16").getValues()
+    };
+    Logger.log("getInventoryData: Fetched catering medleys data");
+
+    data.calendarEvents = getCalendarEvents();
+    Logger.log(`getInventoryData: Calendar events summary - Today: ${data.calendarEvents.todayEvents.length}, Upcoming: ${data.calendarEvents.upcomingEvents.length}, Ongoing: ${data.calendarEvents.ongoingEvents.length}`);
+    
+    var today = new Date();
+    data.overview = {
+      date: Utilities.formatDate(today, "EST", "MMMM dd, yyyy"),
+      dayOfWeek: Utilities.formatDate(today, "EST", "EEEE"),
+      calendarEvents: data.calendarEvents
+    };
+    Logger.log("getInventoryData: Set overview date and calendar events");
+
+    var cacheSheet = spreadsheet.getSheetByName("WeatherCache");
+    if (!cacheSheet) {
+      cacheSheet = spreadsheet.insertSheet("WeatherCache");
+      cacheSheet.getRange("A1").setValue("Last Updated");
+      cacheSheet.getRange("B1").setValue("Temperature");
+      cacheSheet.getRange("C1").setValue("Description");
+    }
+    Logger.log("getInventoryData: Accessed WeatherCache sheet");
+
+    var lastUpdated = cacheSheet.getRange("A2").getValue();
+    var cachedTemp = cacheSheet.getRange("B2").getValue();
+    var cachedDesc = cacheSheet.getRange("C2").getValue();
+    var now = new Date();
+    var oneHour = 60 * 60 * 1000;
+
+    if (lastUpdated && (now - new Date(lastUpdated)) < oneHour && cachedTemp && cachedDesc) {
+      data.overview.weather = {
+        temp: Math.round(cachedTemp),
+        description: cachedDesc
+      };
+      Logger.log("getInventoryData: Used cached weather data");
+    } else {
+      var weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&appid=${WEATHER_API_KEY}&units=imperial`;
+      try {
+        var response = UrlFetchApp.fetch(weatherUrl);
+        var json = JSON.parse(response.getContentText());
+        data.overview.weather = {
+          temp: Math.round(json.main.temp),
+          description: json.weather[0].description
+        };
+        cacheSheet.getRange("A2").setValue(now);
+        cacheSheet.getRange("B2").setValue(data.overview.weather.temp);
+        cacheSheet.getRange("C2").setValue(data.overview.weather.description);
+        Logger.log("getInventoryData: Fetched and cached new weather data");
+      } catch (e) {
+        Logger.log(`getInventoryData: Weather fetch error - ${e.message}`);
+        data.overview.weather = { temp: "N/A", description: "Unable to fetch weather data" };
+      }
+    }
+
+    var hourlyWeatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&exclude=current,minutely,daily,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
+    try {
+      var hourlyResponse = UrlFetchApp.fetch(hourlyWeatherUrl);
+      var hourlyJson = JSON.parse(hourlyResponse.getContentText());
+      data.overview.hourlyWeather = hourlyJson.hourly;
+      Logger.log("getInventoryData: Fetched hourly weather data");
+    } catch (e) {
+      Logger.log(`getInventoryData: Hourly weather fetch error - ${e.message}`);
+      data.overview.hourlyWeather = [];
+    }
+    
+    var projectionSheet = spreadsheet.getSheetByName("D: Medley Projections");
+    if (!projectionSheet) {
+      throw new Error("Sheet 'D: Medley Projections' not found");
+    }
+    data.overview.salesProjections = projectionSheet.getRange("B2:H2").getValues()[0];
+    data.overview.salesOverrides = projectionSheet.getRange("B3:H3").getValues()[0];
+    Logger.log("getInventoryData: Fetched sales projections");
+
+    var variableDataSheet = spreadsheet.getSheetByName("D: Variable Data");
+    if (!variableDataSheet) {
+      throw new Error("Sheet 'D: Variable Data' not found");
+    }
+    data.overview.productMix = {
+      names: variableDataSheet.getRange("A6:A13").getValues().flat(),
+      averages: variableDataSheet.getRange("G6:G13").getValues().flat(),
+      overrides: variableDataSheet.getRange("F6:F13").getValues().flat()
+    };
+    Logger.log("getInventoryData: Fetched product mix data");
+    
+    Logger.log(`getInventoryData: Final data object summary - Overview date: ${data.overview.date}, Calendar events present: ${data.overview.calendarEvents ? 'Yes' : 'No'}`);
+    return data;
+  } catch (error) {
+    Logger.log(`getInventoryData: Error - ${error.message}`);
+    return {
+      overview: {
+        date: "Error",
+        dayOfWeek: "Error",
+        weather: { temp: "N/A", description: "Error fetching data" },
+        calendarEvents: { todayEvents: [], upcomingEvents: [], ongoingEvents: [] },
+        salesProjections: [0, 0, 0, 0, 0, 0, 0],
+        salesOverrides: ['', '', '', '', '', '', ''],
+        productMix: { names: [], averages: [], overrides: [] }
+      },
+      cookies: { names: [], amounts: [] },
+      medleys: { names: [], inventory: [], catering: [] },
+      sauces: { names: [], inventory: [], quarts: [] },
+      garnishes: { names: [], inventory: [], quarts: [] },
+      vegetables: { names: [], amounts: [] },
+      dressings: { names: [], amounts: [] },
+      cateringMedleys: { names: [], portions: [] }
+    };
   }
-  data.overview.productMix = {
-    names: variableDataSheet.getRange("A6:A13").getValues().flat(),
-    averages: variableDataSheet.getRange("G6:G13").getValues().flat(),
-    overrides: variableDataSheet.getRange("F6:F13").getValues().flat()
-  };
-  
-  return data;
 }
 
 function updateSalesOverrides(updates) {
@@ -673,15 +726,21 @@ function deleteCateringOrder(orderId, rowIndex) {
 }
 
 function getCalendarEvents() {
+  Logger.log("getCalendarEvents: Starting event fetch");
   const calendarIds = [
     'c_c59c18554960ff4ecb8488d624cac17f8af62224f3c71acd42edefb4bd52ea6a@group.calendar.google.com',
     'marketing@whatsyourgusto.com'
   ];
   
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today
-  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from today
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000); // Yesterday
+  const timeZone = Session.getScriptTimeZone();
+  today.setHours(0, 0, 0, 0);
+  const todayInTimeZone = new Date(Utilities.formatDate(today, timeZone, 'yyyy-MM-dd'));
+  
+  const nextWeek = new Date(todayInTimeZone.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const yesterday = new Date(todayInTimeZone.getTime() - 24 * 60 * 60 * 1000);
+  
+  Logger.log(`getCalendarEvents: Today (normalized): ${todayInTimeZone}, Next week: ${nextWeek}, Yesterday: ${yesterday}`);
   
   let allEvents = {
     todayEvents: [],
@@ -693,14 +752,14 @@ function getCalendarEvents() {
     try {
       const calendar = CalendarApp.getCalendarById(calendarId);
       if (!calendar) {
-        Logger.log(`Calendar not found or access denied: ${calendarId}`);
+        Logger.log(`getCalendarEvents: Calendar not found or access denied: ${calendarId}`);
         return;
       }
       
       const events = calendar.getEvents(yesterday, nextWeek);
-      const timeZone = calendar.getTimeZone();
+      const calendarTimeZone = calendar.getTimeZone();
       
-      Logger.log(`Fetched ${events.length} events from calendar: ${calendarId}`);
+      Logger.log(`getCalendarEvents: Fetched ${events.length} events from calendar: ${calendarId}`);
       
       events.forEach(event => {
         const title = event.getTitle();
@@ -709,40 +768,41 @@ function getCalendarEvents() {
         const startDate = new Date(event.getStartTime());
         const endDate = new Date(event.getEndTime());
         
+        Logger.log(`getCalendarEvents: Event: ${title}, Start: ${startDate}, End: ${endDate}`);
+        
         if (event.isAllDayEvent()) {
-          start = Utilities.formatDate(startDate, timeZone, 'MMMM dd');
+          start = Utilities.formatDate(startDate, calendarTimeZone, 'MMMM dd');
           const adjustedEndDate = new Date(endDate.getTime() - 24 * 60 * 60 * 1000);
-          end = Utilities.formatDate(adjustedEndDate, timeZone, 'MMMM dd');
+          end = Utilities.formatDate(adjustedEndDate, calendarTimeZone, 'MMMM dd');
         } else {
-          start = Utilities.formatDate(startDate, timeZone, 'MMMM dd, h:mm a');
-          end = Utilities.formatDate(endDate, timeZone, 'MMMM dd, h:mm a');
+          start = Utilities.formatDate(startDate, calendarTimeZone, 'MMMM dd, h:mm a');
+          end = Utilities.formatDate(endDate, calendarTimeZone, 'MMMM dd, h:mm a');
         }
+        
+        const startDateOnly = new Date(Utilities.formatDate(startDate, calendarTimeZone, 'yyyy-MM-dd'));
+        
+        Logger.log(`getCalendarEvents: Event ${title} - StartDateOnly (normalized): ${startDateOnly}, Today (normalized): ${todayInTimeZone}`);
         
         const eventData = { title, start, end, startDate, endDate };
         
-        // Categorize the event
-        const startDateOnly = new Date(startDate);
-        startDateOnly.setHours(0, 0, 0, 0);
-        
-        if (startDateOnly.getTime() === today.getTime()) {
+        if (startDateOnly.getTime() === todayInTimeZone.getTime()) {
           allEvents.todayEvents.push(eventData);
-        } else if (startDateOnly.getTime() > today.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
+        } else if (startDateOnly.getTime() > todayInTimeZone.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
           allEvents.upcomingEvents.push(eventData);
-        } else if (startDateOnly.getTime() < today.getTime() && endDate.getTime() >= today.getTime()) {
+        } else if (startDateOnly.getTime() < todayInTimeZone.getTime() && endDate.getTime() >= todayInTimeZone.getTime()) {
           allEvents.ongoingEvents.push(eventData);
         }
       });
     } catch (error) {
-      Logger.log(`Error fetching events from calendar ${calendarId}: ${error.message}`);
+      Logger.log(`getCalendarEvents: Error fetching events from calendar ${calendarId} - ${error.message}`);
     }
   });
   
-  // Sort events within each category by start date
   allEvents.todayEvents.sort((a, b) => a.startDate - b.startDate);
   allEvents.upcomingEvents.sort((a, b) => a.startDate - b.startDate);
   allEvents.ongoingEvents.sort((a, b) => a.startDate - b.startDate);
   
-  Logger.log(`Final event counts - Today: ${allEvents.todayEvents.length}, Upcoming: ${allEvents.upcomingEvents.length}, Ongoing: ${allEvents.ongoingEvents.length}`);
+  Logger.log(`getCalendarEvents: Final event counts - Today: ${allEvents.todayEvents.length}, Upcoming: ${allEvents.upcomingEvents.length}, Ongoing: ${allEvents.ongoingEvents.length}`);
   
   return allEvents;
 }
