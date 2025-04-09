@@ -1004,16 +1004,35 @@
 
       // Update loadInventory to set up navigation after loading
       function loadInventory() {
-        console.log("Loading inventory...");
-        google.script.run.withSuccessHandler(function(data) {
-          console.log("Inventory data received:", data);
-          displayOverview(data);
-          displayInventory(data);
-          displayCatering(data);
-          // Ensure inputs are rendered before setting up navigation
-          setTimeout(setupInventoryNavigation, 100); // Small delay to ensure DOM updates
-        }).getInventoryData();
-        loadSettings();
+        console.log("loadInventory: Loading inventory...");
+        google.script.run
+          .withSuccessHandler(function(data) {
+            console.log("loadInventory: Inventory data received:", data);
+            if (!data || !data.overview) {
+              console.error("loadInventory: Invalid data received from getInventoryData");
+              document.getElementById('calendarEvents').innerHTML = '<p>Error: Invalid inventory data received.</p>';
+              return;
+            }
+            try {
+              displayOverview(data);
+              displayInventory(data);
+              displayCatering(data);
+            } catch (error) {
+              console.error(`loadInventory: Error displaying data - ${error.message}`);
+              document.getElementById('calendarEvents').innerHTML = `<p>Error displaying inventory: ${error.message}</p>`;
+            }
+          })
+          .withFailureHandler(function(error) {
+            console.error(`loadInventory: Failed to fetch inventory data - ${error.message}`);
+            document.getElementById('calendarEvents').innerHTML = `<p>Error fetching inventory data: ${error.message}</p>`;
+          })
+          .getInventoryData();
+        console.log("loadInventory: Also loading settings...");
+        try {
+          loadSettings();
+        } catch (error) {
+          console.error(`loadInventory: Error loading settings - ${error.message}`);
+        }
       }
 
       function setupInventoryNavigation() {
@@ -1060,18 +1079,25 @@
       }
 
       function displayOverview(data) {
-        console.log("Displaying overview:", data.overview);
+        console.log("displayOverview: Full data received:", data);
+        if (!data) {
+          console.error("displayOverview: No data received from getInventoryData");
+          document.getElementById('calendarEvents').innerHTML = '<p>Error: No inventory data received.</p>';
+          return;
+        }
+
+        console.log("displayOverview: Overview data:", data.overview);
         if (data.overview && data.overview.date && data.overview.dayOfWeek) {
           document.getElementById('date').innerHTML = `${data.overview.date} (${data.overview.dayOfWeek})`;
         } else {
-          console.error("Date or dayOfWeek missing in overview data");
+          console.error("displayOverview: Date or dayOfWeek missing in overview data");
           document.getElementById('date').innerHTML = "Date unavailable";
         }
 
         if (data.overview && data.overview.weather) {
           document.getElementById('weather').innerHTML = `${data.overview.weather.temp}°F, ${data.overview.weather.description}`;
         } else {
-          console.error("Weather data missing in overview");
+          console.error("displayOverview: Weather data missing in overview");
           document.getElementById('weather').innerHTML = "Weather unavailable";
         }
 
@@ -1096,7 +1122,7 @@
               maximumFractionDigits: 2
             });
           } else {
-            console.error("Sales projections missing in overview data");
+            console.error("displayOverview: Sales projections missing in overview data");
             document.getElementById(`proj-${i}`).innerHTML = "N/A";
           }
 
@@ -1116,28 +1142,35 @@
             document.getElementById(`product-mix-override-${i}`).value = overrideValue !== '' ? (overrideValue * 100) : '';
           }
         } else {
-          console.error("Product mix data missing in overview");
+          console.error("displayOverview: Product mix data missing in overview");
           for (let i = 0; i < 8; i++) {
             document.getElementById(`product-mix-avg-${i}`).innerHTML = "N/A";
             document.getElementById(`product-mix-override-${i}`).value = '';
           }
         }
 
-        displayCalendarEvents(data.calendarEvents);
+        if (data.overview && data.overview.calendarEvents) {
+          console.log("displayOverview: Calendar events found in overview:", data.overview.calendarEvents);
+          displayCalendarEvents(data.overview.calendarEvents);
+        } else {
+          console.error("displayOverview: Calendar events missing in overview data");
+          document.getElementById('calendarEvents').innerHTML = '<p>No calendar events available.</p>';
+        }
       }
 
       function displayCalendarEvents(events) {
-        console.log("Displaying calendar events:", events);
+        console.log("displayCalendarEvents: Events received:", events);
         const container = document.getElementById('calendarEvents');
         
         if (!events || (!events.todayEvents && !events.upcomingEvents && !events.ongoingEvents)) {
+          console.error("displayCalendarEvents: No valid events data received");
           container.innerHTML = '<p>No events data received from server.</p>';
           return;
         }
 
         let html = '';
 
-        // Section 1: Going Live Today!
+        console.log("displayCalendarEvents: Today events:", events.todayEvents);
         html += '<h4>Going Live Today!</h4>';
         if (!events.todayEvents || events.todayEvents.length === 0) {
           html += '<p>No events going live today.</p>';
@@ -1145,12 +1178,13 @@
           html += '<table>';
           html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
           events.todayEvents.forEach(event => {
+            console.log("displayCalendarEvents: Rendering today event:", event);
             html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
           });
           html += '</table>';
         }
 
-        // Section 2: Upcoming Events/Promos (next 7 days)
+        console.log("displayCalendarEvents: Upcoming events:", events.upcomingEvents);
         html += '<h4>Upcoming Events/Promos</h4>';
         if (!events.upcomingEvents || events.upcomingEvents.length === 0) {
           html += '<p>No upcoming events in the next 7 days.</p>';
@@ -1158,12 +1192,13 @@
           html += '<table>';
           html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
           events.upcomingEvents.forEach(event => {
+            console.log("displayCalendarEvents: Rendering upcoming event:", event);
             html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
           });
           html += '</table>';
         }
 
-        // Section 3: Ongoing Events/Promos (started before today, still active)
+        console.log("displayCalendarEvents: Ongoing events:", events.ongoingEvents);
         html += '<h4>Ongoing Events/Promos</h4>';
         if (!events.ongoingEvents || events.ongoingEvents.length === 0) {
           html += '<p>No ongoing events.</p>';
@@ -1171,12 +1206,14 @@
           html += '<table>';
           html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
           events.ongoingEvents.forEach(event => {
+            console.log("displayCalendarEvents: Rendering ongoing event:", event);
             html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
           });
           html += '</table>';
         }
 
         container.innerHTML = html;
+        console.log("displayCalendarEvents: Rendered calendar events");
       }
 
       function storeOverride(col, value) {
@@ -1473,77 +1510,75 @@
       }
       
       function displayInventory(data) {
-        console.log("Displaying inventory:", data);
-        createTable('cookies', ['Name', 'Amount'], 
-          data.cookies.names.map((name, i) => [name, data.cookies.amounts[i]]), 
-          storeUpdate, { range: 'C4:C6', title: 'Cookies', isEditable: true });
-
-        createTable('medleys', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans'], 
-          data.medleys.names.map((name, i) => [name, data.medleys.inventory[i][0], data.medleys.inventory[i][1], data.medleys.inventory[i][2]]), 
-          storeUpdate, { range: 'C9:E16', title: 'Medleys', isEditable: true });
-
-        createTable('sauces', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
-          data.sauces.names.map((name, i) => [name, data.sauces.inventory[i][0], data.sauces.inventory[i][1], data.sauces.inventory[i][2], data.sauces.quarts[i]]), 
-          storeUpdate, { range: 'C19:E27', title: 'Sauces', isEditable: true, extraRange: 'G19:G27' });
-
-        createTable('garnishes', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
-          data.garnishes.names.map((name, i) => [name, data.garnishes.inventory[i][0], data.garnishes.inventory[i][1], data.garnishes.inventory[i][2], data.garnishes.quarts[i]]), 
-          storeUpdate, { range: 'C30:E34', title: 'Garnishes', isEditable: true, extraRange: 'G30:G34' });
-
-        createTable('vegetables', ['Name', 'Amount'], 
-          data.vegetables.names.map((name, i) => [name, data.vegetables.amounts[i]]), 
-          storeUpdate, { range: 'C36:C55', title: 'Vegetables', isEditable: true });
-
-        createTable('dressings', ['Name', 'Amount'], 
-          data.dressings.names.map((name, i) => [name, data.dressings.amounts[i]]), 
-          storeUpdate, { range: 'C57:C64', title: 'Dressings', isEditable: true });
+        console.log("displayInventory: Displaying inventory:", data);
+        try {
+          createTable('cookies', ['Name', 'Amount'], 
+            data.cookies.names.map((name, i) => [name, data.cookies.amounts[i]]), 
+            storeUpdate, { range: 'C4:C6', title: 'Cookies', isEditable: true });
+          createTable('medleys', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans'], 
+            data.medleys.names.map((name, i) => [name, data.medleys.inventory[i][0], data.medleys.inventory[i][1], data.medleys.inventory[i][2]]), 
+            storeUpdate, { range: 'C9:E16', title: 'Medleys', isEditable: true });
+          createTable('sauces', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
+            data.sauces.names.map((name, i) => [name, data.sauces.inventory[i][0], data.sauces.inventory[i][1], data.sauces.inventory[i][2], data.sauces.quarts[i]]), 
+            storeUpdate, { range: 'C19:E27', title: 'Sauces', isEditable: true, extraRange: 'G19:G27' });
+          createTable('garnishes', ['Name', 'Line 1', 'Line 2', 'Walk-In Pans', 'Walk-In Quarts'], 
+            data.garnishes.names.map((name, i) => [name, data.garnishes.inventory[i][0], data.garnishes.inventory[i][1], data.garnishes.inventory[i][2], data.garnishes.quarts[i]]), 
+            storeUpdate, { range: 'C30:E34', title: 'Garnishes', isEditable: true, extraRange: 'G30:G34' });
+          createTable('vegetables', ['Name', 'Amount'], 
+            data.vegetables.names.map((name, i) => [name, data.vegetables.amounts[i]]), 
+            storeUpdate, { range: 'C36:C55', title: 'Vegetables', isEditable: true });
+          createTable('dressings', ['Name', 'Amount'], 
+            data.dressings.names.map((name, i) => [name, data.dressings.amounts[i]]), 
+            storeUpdate, { range: 'C57:C64', title: 'Dressings', isEditable: true });
+          console.log("displayInventory: Inventory displayed successfully");
+        } catch (error) {
+          console.error(`displayInventory: Error - ${error.message}`);
+        }
       }
 
       function displayCatering(data) {
-        console.log("Displaying catering:", data);
-        var cateringDiv = document.getElementById('catering');
-        
-        // Clear all existing content in the catering div
-        cateringDiv.innerHTML = '';
-        
-        // Rebuild the catering table section
-        var cateringTableSection = document.createElement('div');
-        cateringTableSection.className = 'section';
-        cateringTableSection.innerHTML = `
-          <h3>Catering Portions</h3>
-          <button onclick="shiftDaysUp()">Shift Days Up</button>
-        `;
-        
-        var cateringTable = document.createElement('table');
-        var headerRow = document.createElement('tr');
-        headerRow.innerHTML = '<th>Medley</th><th>Today</th><th>Day 2</th><th>Day 3</th><th>Day 4</th><th>Day 5</th>';
-        cateringTable.appendChild(headerRow);
+        console.log("displayCatering: Displaying catering:", data);
+        try {
+          var cateringDiv = document.getElementById('catering');
+          cateringDiv.innerHTML = '';
+          var cateringTableSection = document.createElement('div');
+          cateringTableSection.className = 'section';
+          cateringTableSection.innerHTML = `
+            <h3>Catering Portions</h3>
+            <button onclick="shiftDaysUp()">Shift Days Up</button>
+          `;
+          var cateringTable = document.createElement('table');
+          var headerRow = document.createElement('tr');
+          headerRow.innerHTML = '<th>Medley</th><th>Today</th><th>Day 2</th><th>Day 3</th><th>Day 4</th><th>Day 5</th>';
+          cateringTable.appendChild(headerRow);
 
-        cateringMedleyCount = data.cateringMedleys.names.length;
-        data.cateringMedleys.names.forEach((name, index) => {
-          if (name && name.trim()) {
-            var row = document.createElement('tr');
-            row.innerHTML = `<td data-label="Medley">${name}</td>
-                            <td data-label="Today"><input type="number" id="catering-today-${index}" value="${data.cateringMedleys.portions[index][0] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 1, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-today')"></td>
-                            <td data-label="Day 2"><input type="number" id="catering-day2-${index}" value="${data.cateringMedleys.portions[index][1] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 2, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day2')"></td>
-                            <td data-label="Day 3"><input type="number" id="catering-day3-${index}" value="${data.cateringMedleys.portions[index][2] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 3, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day3')"></td>
-                            <td data-label="Day 4"><input type="number" id="catering-day4-${index}" value="${data.cateringMedleys.portions[index][3] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 4, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day4')"></td>
-                            <td data-label="Day 5"><input type="number" id="catering-day5-${index}" value="${data.cateringMedleys.portions[index][4] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 5, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day5')"></td>`;
-            cateringTable.appendChild(row);
-          }
-        });
-        cateringTableSection.appendChild(cateringTable);
-        
-        const saveButton = document.createElement('button');
-        saveButton.textContent = 'Save with gusto! & Proceed to Prep Sheet';
-        saveButton.onclick = saveCateringAndProceed;
-        cateringTableSection.appendChild(saveButton);
-        
-        // Append the catering table section to the catering div
-        cateringDiv.appendChild(cateringTableSection);
-        
-        // Now load the catering orders
-        loadCateringOrders();
+          cateringMedleyCount = data.cateringMedleys.names.length;
+          data.cateringMedleys.names.forEach((name, index) => {
+            if (name && name.trim()) {
+              var row = document.createElement('tr');
+              row.innerHTML = `<td data-label="Medley">${name}</td>
+                              <td data-label="Today"><input type="number" id="catering-today-${index}" value="${data.cateringMedleys.portions[index][0] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 1, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-today')"></td>
+                              <td data-label="Day 2"><input type="number" id="catering-day2-${index}" value="${data.cateringMedleys.portions[index][1] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 2, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day2')"></td>
+                              <td data-label="Day 3"><input type="number" id="catering-day3-${index}" value="${data.cateringMedleys.portions[index][2] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 3, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day3')"></td>
+                              <td data-label="Day 4"><input type="number" id="catering-day4-${index}" value="${data.cateringMedleys.portions[index][3] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 4, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day4')"></td>
+                              <td data-label="Day 5"><input type="number" id="catering-day5-${index}" value="${data.cateringMedleys.portions[index][4] || 0}" oninput="storeUpdate('G9:K16', ${index + 1}, 5, this.value)" onkeypress="moveToNext(event, ${index}, 'catering-day5')"></td>`;
+              cateringTable.appendChild(row);
+            }
+          });
+          cateringTableSection.appendChild(cateringTable);
+          
+          const saveButton = document.createElement('button');
+          saveButton.textContent = 'Save with gusto! & Proceed to Prep Sheet';
+          saveButton.onclick = saveCateringAndProceed;
+          cateringTableSection.appendChild(saveButton);
+          
+          cateringDiv.appendChild(cateringTableSection);
+          
+          loadCateringOrders();
+          console.log("displayCatering: Catering displayed successfully");
+        } catch (error) {
+          console.error(`displayCatering: Error - ${error.message}`);
+        }
       }
 
       function loadCateringOrders() {
@@ -2753,7 +2788,12 @@
       // This ensures that loadInventory is called when the page loads
       window.onload = function() {
         console.log("Window loaded, calling loadInventory...");
-        loadInventory();
+        try {
+          loadInventory();
+        } catch (error) {
+          console.error(`loadInventory: Error - ${error.message}`);
+          document.getElementById('calendarEvents').innerHTML = `<p>Error loading inventory: ${error.message}</p>`;
+        }
       };
     </script>
   </body>
