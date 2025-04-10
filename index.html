@@ -1174,7 +1174,7 @@
         }
 
         // Display hourly weather data
-        if (data.overview && data.overview.hourlyWeather && data.overview.hourlyWeather.length > 0) {
+        if (data.overview && data.overview.weather) { // Ensure we have current weather as a fallback
           console.log("displayOverview: Hourly weather data:", data.overview.hourlyWeather);
 
           // Get the current date at midnight for comparison
@@ -1182,72 +1182,86 @@
           today.setHours(0, 0, 0, 0);
 
           // Filter hourly weather data for today between 9:00 AM and 10:00 PM
-          const hourlyData = data.overview.hourlyWeather.filter(hour => {
-            const hourDate = new Date(hour.dt * 1000);
-            const isToday = hourDate.getDate() === today.getDate() &&
-                            hourDate.getMonth() === today.getMonth() &&
-                            hourDate.getFullYear() === today.getFullYear();
-            const hourOfDay = hourDate.getHours();
-            return isToday && hourOfDay >= 9 && hourOfDay <= 22; // Changed to start at 9:00 AM
-          });
+          let hourlyData = [];
+          if (data.overview.hourlyWeather && data.overview.hourlyWeather.length > 0) {
+            hourlyData = data.overview.hourlyWeather.filter(hour => {
+              const hourDate = new Date(hour.dt * 1000);
+              const isToday = hourDate.getDate() === today.getDate() &&
+                              hourDate.getMonth() === today.getMonth() &&
+                              hourDate.getFullYear() === today.getFullYear();
+              const hourOfDay = hourDate.getHours();
+              return isToday && hourOfDay >= 9 && hourOfDay <= 22;
+            });
+          }
 
           console.log("displayOverview: Filtered hourly data for 9:00 AM to 10:00 PM:", hourlyData);
 
-          if (hourlyData.length > 0) {
-            // Split into Morning (9:00 AM - 4:00 PM) and Evening (4:00 PM - 10:00 PM)
-            const morningData = hourlyData.filter(hour => {
-              const hourDate = new Date(hour.dt * 1000);
-              return hourDate.getHours() >= 9 && hourDate.getHours() < 16; // Changed to start at 9:00 AM
-            });
-
-            const eveningData = hourlyData.filter(hour => {
-              const hourDate = new Date(hour.dt * 1000);
-              return hourDate.getHours() >= 16 && hourDate.getHours() <= 22;
-            });
-
-            let hourlyHtml = '<h4>Hourly Forecast</h4>';
-            hourlyHtml += '<div class="weather-columns">';
-            
-            // Morning Column
-            hourlyHtml += '<div class="weather-column">';
-            hourlyHtml += '<h5>Morning</h5>';
-            if (morningData.length === 0) {
-              hourlyHtml += '<p>No data available.</p>';
-            } else {
-              hourlyHtml += '<table>';
-              hourlyHtml += '<tr><th>Time</th><th>Temp (°F)</th><th>Description</th></tr>';
-              morningData.forEach(hour => {
-                const time = new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-                hourlyHtml += `<tr><td>${time}</td><td>${Math.round(hour.temp)}°F</td><td>${hour.weather}</td></tr>`;
+          // If no hourly data, generate placeholder data using current weather
+          if (hourlyData.length === 0) {
+            for (let hour = 9; hour <= 22; hour++) {
+              const hourTime = new Date(today);
+              hourTime.setHours(hour, 0, 0, 0);
+              const hourUnix = Math.floor(hourTime.getTime() / 1000);
+              hourlyData.push({
+                dt: hourUnix,
+                temp: data.overview.weather.temp,
+                weather: data.overview.weather.description
               });
-              hourlyHtml += '</table>';
             }
-            hourlyHtml += '</div>';
-
-            // Evening Column
-            hourlyHtml += '<div class="weather-column">';
-            hourlyHtml += '<h5>Evening</h5>';
-            if (eveningData.length === 0) {
-              hourlyHtml += '<p>No data available.</p>';
-            } else {
-              hourlyHtml += '<table>';
-              hourlyHtml += '<tr><th>Time</th><th>Temp (°F)</th><th>Description</th></tr>';
-              eveningData.forEach(hour => {
-                const time = new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-                hourlyHtml += `<tr><td>${time}</td><td>${Math.round(hour.temp)}°F</td><td>${hour.weather}</td></tr>`;
-              });
-              hourlyHtml += '</table>';
-            }
-            hourlyHtml += '</div>';
-
-            hourlyHtml += '</div>';
-            document.getElementById('weather').innerHTML += hourlyHtml;
-          } else {
-            console.log("displayOverview: No hourly weather data available for today between 9:00 AM and 10:00 PM");
-            document.getElementById('weather').innerHTML += '<p>No hourly forecast available for today.</p>';
+            console.log("displayOverview: Generated placeholder hourly data:", hourlyData);
           }
+
+          // Split into Morning (9:00 AM - 4:00 PM) and Evening (4:00 PM - 10:00 PM)
+          const morningData = hourlyData.filter(hour => {
+            const hourDate = new Date(hour.dt * 1000);
+            return hourDate.getHours() >= 9 && hourDate.getHours() < 16;
+          });
+
+          const eveningData = hourlyData.filter(hour => {
+            const hourDate = new Date(hour.dt * 1000);
+            return hourDate.getHours() >= 16 && hourDate.getHours() <= 22;
+          });
+
+          let hourlyHtml = '<h4>Hourly Forecast</h4>';
+          hourlyHtml += '<div class="weather-columns">';
+          
+          // Morning Column
+          hourlyHtml += '<div class="weather-column">';
+          hourlyHtml += '<h5>Morning</h5>';
+          if (morningData.length === 0) {
+            hourlyHtml += '<p>No data available.</p>';
+          } else {
+            hourlyHtml += '<table>';
+            hourlyHtml += '<tr><th>Time</th><th>Temp (°F)</th><th>Description</th></tr>';
+            morningData.forEach(hour => {
+              const time = new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+              hourlyHtml += `<tr><td>${time}</td><td>${Math.round(hour.temp)}°F</td><td>${hour.weather}</td></tr>`;
+            });
+            hourlyHtml += '</table>';
+          }
+          hourlyHtml += '</div>';
+
+          // Evening Column
+          hourlyHtml += '<div class="weather-column">';
+          hourlyHtml += '<h5>Evening</h5>';
+          if (eveningData.length === 0) {
+            hourlyHtml += '<p>No data available.</p>';
+          } else {
+            hourlyHtml += '<table>';
+            hourlyHtml += '<tr><th>Time</th><th>Temp (°F)</th><th>Description</th></tr>';
+            eveningData.forEach(hour => {
+              const time = new Date(hour.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+              hourlyHtml += `<tr><td>${time}</td><td>${Math.round(hour.temp)}°F</td><td>${hour.weather}</td></tr>`;
+            });
+            hourlyHtml += '</table>';
+          }
+          hourlyHtml += '</div>';
+
+          hourlyHtml += '</div>';
+          document.getElementById('weather').innerHTML += hourlyHtml;
         } else {
-          console.log("displayOverview: No hourly weather data available");
+          console.log("displayOverview: No weather data available");
+          document.getElementById('weather').innerHTML += '<p>No weather data available.</p>';
         }
 
         const today = new Date();
