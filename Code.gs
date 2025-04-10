@@ -110,7 +110,6 @@ function getInventoryData() {
     };
     Logger.log("getInventoryData: Fetched catering medleys data");
 
-    // Reintroduce calendar events
     data.calendarEvents = getCalendarEvents();
     Logger.log(`getInventoryData: Calendar events summary - Today: ${data.calendarEvents.todayEvents.length}, Upcoming: ${data.calendarEvents.upcomingEvents.length}, Ongoing: ${data.calendarEvents.ongoingEvents.length}`);
     
@@ -118,14 +117,153 @@ function getInventoryData() {
     data.overview = {
       date: Utilities.formatDate(today, "EST", "MMMM dd, yyyy"),
       dayOfWeek: Utilities.formatDate(today, "EST", "EEEE"),
-      calendarEvents: data.calendarEvents,
-      weather: { temp: "N/A", description: "Disabled for debugging" }, // Still disabled
-      hourlyWeather: [], // Still disabled
-      salesProjections: [0, 0, 0, 0, 0, 0, 0], // Simplified
-      salesOverrides: ['', '', '', '', '', '', ''], // Simplified
-      productMix: { names: [], averages: [], overrides: [] } // Simplified
+      calendarEvents: data.calendarEvents
     };
-    Logger.log("getInventoryData: Set overview data");
+    Logger.log("getInventoryData: Set overview date and calendar events");
+
+    var cacheSheet = spreadsheet.getSheetByName("WeatherCache");
+    if (!cacheSheet) {
+      cacheSheet = spreadsheet.insertSheet("WeatherCache");
+      cacheSheet.getRange("A1").setValue("Last Updated");
+      cacheSheet.getRange("B1").setValue("Temperature");
+      cacheSheet.getRange("C1").setValue("Description");
+      cacheSheet.getRange("D1").setValue("Hourly Data Date");
+      cacheSheet.getRange("E1").setValue("Hourly Data");
+    }
+    Logger.log("getInventoryData: Accessed WeatherCache sheet");
+
+    var lastUpdated = cacheSheet.getRange("A2").getValue();
+    var cachedTemp = cacheSheet.getRange("B2").getValue();
+    var cachedDesc = cacheSheet.getRange("C2").getValue();
+    var cachedHourlyDate = cacheSheet.getRange("D2").getValue();
+    var cachedHourlyData = cacheSheet.getRange("E2").getValue();
+    var now = new Date();
+    var oneHour = 60 * 60 * 1000;
+
+    if (lastUpdated && (now - new Date(lastUpdated)) < oneHour && cachedTemp && cachedDesc) {
+      data.overview.weather = {
+        temp: Math.round(cachedTemp),
+        description: cachedDesc
+      };
+      Logger.log("getInventoryData: Used cached weather data");
+    } else {
+      var weatherUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&appid=${WEATHER_API_KEY}&units=imperial`;
+      try {
+        var response = UrlFetchApp.fetch(weatherUrl);
+        var json = JSON.parse(response.getContentText());
+        data.overview.weather = {
+          temp: Math.round(json.main.temp),
+          description: json.weather[0].description
+        };
+        cacheSheet.getRange("A2").setValue(now.toISOString());
+        cacheSheet.getRange("B2").setValue(data.overview.weather.temp);
+        cacheSheet.getRange("C2").setValue(data.overview.weather.description);
+        Logger.log("getInventoryData: Fetched and cached new weather data");
+      } catch (e) {
+        Logger.log(`getInventoryData: Weather fetch error - ${e.message}`);
+        data.overview.weather = { temp: "N/A", description: "Unable to fetch weather data" };
+      }
+    }
+
+    var hourlyWeatherUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${CHAMBLEE_LAT}&lon=${CHAMBLEE_LON}&exclude=current,minutely,daily,alerts&units=imperial&appid=${WEATHER_API_KEY}`;
+    try {
+      var hourlyResponse = UrlFetchApp.fetch(hourlyWeatherUrl);
+      var hourlyJson = JSON.parse(hourlyResponse.getContentText());
+      var freshHourlyData = hourlyJson.hourly.map(hour => ({
+        dt: hour.dt,
+        temp: hour.temp,
+        weather: hour.weather[0].description
+      }));
+      Logger.log("getInventoryData: Fetched fresh hourly weather data");
+
+      // Cache the hourly data for the current day
+      const todayStr = Utilities.formatDate(today, "EST", "yyyy-MM-dd");
+      cacheSheet.getRange("D2").setValue(todayStr);
+      cacheSheet.getRange("E2").setValue(JSON.stringify(freshHourlyData));
+      Logger.log("getInventoryData: Cached hourly weather data for today");
+    } catch (e) {
+      Logger.log(`getInventoryData: Hourly weather fetch error - ${e.message}`);
+      freshHourlyData = [];
+    }
+
+    // Combine cached and fresh hourly data
+    let combinedHourlyData = [];
+    try {
+      const cachedDateStr = cachedHourlyDate ? Utilities.formatDate(new Date(cachedHourlyDate), "EST", "yyyy-MM-dd") : null;
+      const todayStr = Utilities.formatDate(today, "EST", "yyyy-MM-dd");
+      let cachedData = [];
+      if (cachedDateStr === todayStr && cachedHourlyData) {
+        cachedData = JSON.parse(cachedHourlyData);
+        Logger.log("getInventoryData: Using cached hourly data for today");
+      }
+
+      // Get the current time
+      const currentHour = now.getHours();
+      const currentTime = now.getTime() / 1000; // Convert to Unix timestamp
+
+      // Use cached data for past hours (9:00 AM to current time)
+      const startOfDay = new Date(today);
+      startOfDay.setHours(9, 0, 0, 0); // Start at 9:00 AM today (changed from 10:00 AM)
+      const startOfDayUnix = Math.floor(startOfDay.getTime() / 1000);
+
+      for (let hour = 9; hour <= currentHour && hour <= 22; hour++) { // Start at 9:00 AM
+        const hourTime = new Date(today);
+        hourTime.setHours(hour, 0, 0, 0);
+        const hourUnix = Math.floor(hourTime.getTime() / 1000);
+        const cachedHour = cachedData.find(h => h.dt === hourUnix);
+        if (cachedHour) {
+          combinedHourlyData.push(cachedHour);
+        } else {
+          // Fallback if no cached data for this hour
+          combinedHourlyData.push({
+            dt: hourUnix,
+            temp: data.overview.weather.temp,
+            weather: data.overview.weather.description
+          });
+        }
+      }
+
+      // Use fresh data for future hours (current time to 10:00 PM)
+      const endOfDay = new Date(today);
+      endOfDay.setHours(22, 0, 0, 0); // 10:00 PM today
+      const endOfDayUnix = Math.floor(endOfDay.getTime() / 1000);
+
+      const futureData = freshHourlyData.filter(hour => {
+        return hour.dt > currentTime && hour.dt <= endOfDayUnix;
+      });
+
+      combinedHourlyData = combinedHourlyData.concat(futureData);
+      Logger.log(`getInventoryData: Combined hourly data - ${combinedHourlyData.length} entries`);
+    } catch (e) {
+      Logger.log(`getInventoryData: Error combining hourly weather data - ${e.message}`);
+      combinedHourlyData = freshHourlyData;
+    }
+
+    data.overview.hourlyWeather = combinedHourlyData;
+
+    var projectionSheet = spreadsheet.getSheetByName("D: Medley Projections");
+    if (!projectionSheet) {
+      Logger.log("getInventoryData: Sheet 'D: Medley Projections' not found");
+      data.overview.salesProjections = [0, 0, 0, 0, 0, 0, 0];
+      data.overview.salesOverrides = ['', '', '', '', '', '', ''];
+    } else {
+      data.overview.salesProjections = projectionSheet.getRange("B2:H2").getValues()[0];
+      data.overview.salesOverrides = projectionSheet.getRange("B3:H3").getValues()[0];
+      Logger.log("getInventoryData: Fetched sales projections");
+    }
+
+    var variableDataSheet = spreadsheet.getSheetByName("D: Variable Data");
+    if (!variableDataSheet) {
+      Logger.log("getInventoryData: Sheet 'D: Variable Data' not found");
+      data.overview.productMix = { names: [], averages: [], overrides: [] };
+    } else {
+      data.overview.productMix = {
+        names: variableDataSheet.getRange("A6:A13").getValues().flat(),
+        averages: variableDataSheet.getRange("G6:G13").getValues().flat(),
+        overrides: variableDataSheet.getRange("F6:F13").getValues().flat()
+      };
+      Logger.log("getInventoryData: Fetched product mix data");
+    }
 
     Logger.log(`getInventoryData: Final data object summary - Overview date: ${data.overview.date}, Calendar events present: ${data.overview.calendarEvents ? 'Yes' : 'No'}`);
     return data;
@@ -151,6 +289,7 @@ function getInventoryData() {
     };
   }
 }
+
 
 function updateSalesOverrides(updates) {
   var projectionSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("D: Medley Projections");
