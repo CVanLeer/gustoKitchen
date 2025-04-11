@@ -802,8 +802,8 @@ function deleteCateringOrder(orderId, rowIndex) {
 function getCalendarEvents() {
   Logger.log("getCalendarEvents: Starting event fetch");
   const calendarIds = [
-    'c_c59c18554960ff4ecb8488d624cac17f8af62224f3c71acd42edefb4bd52ea6a@group.calendar.google.com',
-    'marketing@whatsyourgusto.com'
+    { id: 'c_c59c18554960ff4ecb8488d624cac17f8af62224f3c71acd42edefb4bd52ea6a@group.calendar.google.com', source: 'general' },
+    { id: 'marketing@whatsyourgusto.com', source: 'marketing' }
   ];
   
   const today = new Date();
@@ -822,18 +822,18 @@ function getCalendarEvents() {
     ongoingEvents: []
   };
   
-  calendarIds.forEach(calendarId => {
+  calendarIds.forEach(calendar => {
     try {
-      const calendar = CalendarApp.getCalendarById(calendarId);
-      if (!calendar) {
-        Logger.log(`getCalendarEvents: Calendar not found or access denied: ${calendarId}`);
+      const calendarObj = CalendarApp.getCalendarById(calendar.id);
+      if (!calendarObj) {
+        Logger.log(`getCalendarEvents: Calendar not found or access denied: ${calendar.id}`);
         return;
       }
       
-      const events = calendar.getEvents(yesterday, nextWeek);
-      const calendarTimeZone = calendar.getTimeZone();
+      const events = calendarObj.getEvents(yesterday, nextWeek);
+      const calendarTimeZone = calendarObj.getTimeZone();
       
-      Logger.log(`getCalendarEvents: Fetched ${events.length} events from calendar: ${calendarId}`);
+      Logger.log(`getCalendarEvents: Fetched ${events.length} events from calendar: ${calendar.id}, Source: ${calendar.source}`);
       
       events.forEach(event => {
         const title = event.getTitle();
@@ -842,7 +842,7 @@ function getCalendarEvents() {
         const startDate = new Date(event.getStartTime());
         const endDate = new Date(event.getEndTime());
         
-        Logger.log(`getCalendarEvents: Event: ${title}, Start: ${startDate}, End: ${endDate}`);
+        Logger.log(`getCalendarEvents: Event: ${title}, Start: ${startDate}, End: ${endDate}, Source: ${calendar.source}`);
         
         if (event.isAllDayEvent()) {
           start = Utilities.formatDate(startDate, calendarTimeZone, 'MMMM dd');
@@ -854,27 +854,33 @@ function getCalendarEvents() {
         }
         
         const startDateOnly = new Date(Utilities.formatDate(startDate, calendarTimeZone, 'yyyy-MM-dd'));
+        const endDateOnly = new Date(Utilities.formatDate(endDate, calendarTimeZone, 'yyyy-MM-dd'));
         
-        Logger.log(`getCalendarEvents: Event ${title} - StartDateOnly (normalized): ${startDateOnly}, Today (normalized): ${todayInTimeZone}`);
+        Logger.log(`getCalendarEvents: Event ${title} - StartDateOnly: ${startDateOnly}, EndDateOnly: ${endDateOnly}, Today: ${todayInTimeZone}`);
         
         const eventData = {
           title,
           start,
           end,
-          startDate: startDate.toISOString(), // Convert to string
-          endDate: endDate.toISOString() // Convert to string
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          source: calendar.source // Ensure source is set
         };
         
+        // Categorize events with priority
         if (startDateOnly.getTime() === todayInTimeZone.getTime()) {
           allEvents.todayEvents.push(eventData);
+          Logger.log(`getCalendarEvents: Event ${title} categorized as Going Live Today!`);
+        } else if (startDateOnly.getTime() < todayInTimeZone.getTime() && endDateOnly.getTime() >= todayInTimeZone.getTime()) {
+          allEvents.ongoingEvents.push(eventData);
+          Logger.log(`getCalendarEvents: Event ${title} categorized as Ongoing Events/Promos`);
         } else if (startDateOnly.getTime() > todayInTimeZone.getTime() && startDateOnly.getTime() <= nextWeek.getTime()) {
           allEvents.upcomingEvents.push(eventData);
-        } else if (startDateOnly.getTime() < todayInTimeZone.getTime() && endDate.getTime() >= todayInTimeZone.getTime()) {
-          allEvents.ongoingEvents.push(eventData);
+          Logger.log(`getCalendarEvents: Event ${title} categorized as Upcoming Events/Promos`);
         }
       });
     } catch (error) {
-      Logger.log(`getCalendarEvents: Error fetching events from calendar ${calendarId} - ${error.message}`);
+      Logger.log(`getCalendarEvents: Error fetching events from calendar ${calendar.id} - ${error.message}`);
     }
   });
   
