@@ -197,7 +197,6 @@
       .overview-section {
         text-align: center;
       }
-
       .weather-columns {
         display: flex;
         justify-content: space-between;
@@ -250,6 +249,12 @@
         margin: 20px auto;
         max-width: 600px;
         border: 1px solid #E0E0E0;
+      }
+      #calendarEvents .marketing-event {
+        background-color: #E0F7FA !important; /* Light teal/baby blue */
+      }
+      #calendarEvents .marketing-event:hover {
+        background-color: #B2EBF2 !important; /* Slightly darker teal on hover */
       }
       .sales table {
         width: 100%;
@@ -888,7 +893,6 @@
             <p id="weather"></p>
           </div>
           <div class="calendar-events">
-            <h4>Upcoming Events</h4>
             <div id="calendarEvents"></div>
           </div>
           <button id="save-proceed-top" onclick="saveOverridesAndProceed()">Save with gusto! & Proceed to Inventory</button>
@@ -1333,6 +1337,7 @@
 
         let html = '';
 
+        // Section 1: Going Live Today!
         console.log("displayCalendarEvents: Today events:", events.todayEvents);
         html += '<h4>Going Live Today!</h4>';
         if (!events.todayEvents || events.todayEvents.length === 0) {
@@ -1341,36 +1346,50 @@
           html += '<table>';
           html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
           events.todayEvents.forEach(event => {
-            console.log("displayCalendarEvents: Rendering today event:", event);
-            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+            if (!event.source) {
+              console.warn(`displayCalendarEvents: Today event - ${event.title} has no source property`);
+            }
+            console.log(`displayCalendarEvents: Today event - ${event.title}, Source: ${event.source || 'unknown'}`);
+            const rowClass = event.source && event.source.toLowerCase() === 'marketing' ? 'marketing-event' : '';
+            html += `<tr class="${rowClass}"><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
           });
           html += '</table>';
         }
 
-        console.log("displayCalendarEvents: Upcoming events:", events.upcomingEvents);
-        html += '<h4>Upcoming Events/Promos</h4>';
-        if (!events.upcomingEvents || events.upcomingEvents.length === 0) {
-          html += '<p>No upcoming events in the next 7 days.</p>';
-        } else {
-          html += '<table>';
-          html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
-          events.upcomingEvents.forEach(event => {
-            console.log("displayCalendarEvents: Rendering upcoming event:", event);
-            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
-          });
-          html += '</table>';
-        }
-
+        // Section 2: Ongoing (previously Ongoing Events/Promos, now moved up)
         console.log("displayCalendarEvents: Ongoing events:", events.ongoingEvents);
-        html += '<h4>Ongoing Events/Promos</h4>';
+        html += '<h4>Ongoing</h4>';
         if (!events.ongoingEvents || events.ongoingEvents.length === 0) {
           html += '<p>No ongoing events.</p>';
         } else {
           html += '<table>';
           html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
           events.ongoingEvents.forEach(event => {
-            console.log("displayCalendarEvents: Rendering ongoing event:", event);
-            html += `<tr><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+            if (!event.source) {
+              console.warn(`displayCalendarEvents: Ongoing event - ${event.title} has no source property`);
+            }
+            console.log(`displayCalendarEvents: Ongoing event - ${event.title}, Source: ${event.source || 'unknown'}`);
+            const rowClass = event.source && event.source.toLowerCase() === 'marketing' ? 'marketing-event' : '';
+            html += `<tr class="${rowClass}"><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
+          });
+          html += '</table>';
+        }
+
+        // Section 3: Upcoming (previously Upcoming Events/Promos, now moved down)
+        console.log("displayCalendarEvents: Upcoming events:", events.upcomingEvents);
+        html += '<h4>Upcoming</h4>';
+        if (!events.upcomingEvents || events.upcomingEvents.length === 0) {
+          html += '<p>No upcoming events in the next 7 days.</p>';
+        } else {
+          html += '<table>';
+          html += '<tr><th>Event</th><th>Start</th><th>End</th></tr>';
+          events.upcomingEvents.forEach(event => {
+            if (!event.source) {
+              console.warn(`displayCalendarEvents: Upcoming event - ${event.title} has no source property`);
+            }
+            console.log(`displayCalendarEvents: Upcoming event - ${event.title}, Source: ${event.source || 'unknown'}`);
+            const rowClass = event.source && event.source.toLowerCase() === 'marketing' ? 'marketing-event' : '';
+            html += `<tr class="${rowClass}"><td>${event.title}</td><td>${event.start}</td><td>${event.end}</td></tr>`;
           });
           html += '</table>';
         }
